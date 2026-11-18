@@ -1,0 +1,19 @@
+{
+  "name": "loopless",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LoopLess: time-windowed daily route, errand, and task tour optimizer for students and families.",
+  "type": "module",
+  "main": "js/planner.mjs",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "eval": "node scripts/run-eval.mjs",
+    "eval:check": "node scripts/run-eval.mjs --check",
+    "eval:json": "node scripts/run-eval.mjs --json"
+  },
+  "author": "draarivpatel-ui",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

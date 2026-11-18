@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'">
+  <title>LoopLess - Time-Windowed Daily Route &amp; Task Optimizer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-wrap">
+      <div class="brand-mark" aria-hidden="true">LL</div>
+      <div>
+        <h1 class="brand-title">LoopLess</h1>
+        <p class="brand-sub">Deterministic time-windowed route, errand, and task tour optimizer</p>
+      </div>
+    </div>
+    <div class="topbar-actions no-print">
+      <button type="button" id="btn-run-bench" class="btn btn-secondary">Run 16-Case Benchmark</button>
+      <button type="button" id="btn-export-ics" class="btn btn-primary">Export .ics Calendar</button>
+      <button type="button" id="btn-export-json" class="btn btn-secondary">Export JSON</button>
+      <button type="button" id="btn-print" class="btn btn-secondary">Print Day Card</button>
+    </div>
+  </header>
+
+  <section class="controls-bar no-print" aria-label="Tour settings">
+    <div class="control-group">
+      <label for="preset-select">Scenario Preset</label>
+      <select id="preset-select"></select>
+    </div>
+
+    <div class="control-group">
+      <span class="control-label">Transit Mode</span>
+      <div id="mode-buttons" class="segmented" role="group" aria-label="Transit mode">
+        <button type="button" data-mode="walk">Walk</button>
+        <button type="button" data-mode="bike">Bike</button>
+        <button type="button" data-mode="bus">Bus / Rail</button>
+        <button type="button" data-mode="car">Car</button>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label for="metric-select">Distance Metric</label>
+      <select id="metric-select">
+        <option value="manhattan">Manhattan Street Grid</option>
+        <option value="euclidean">Euclidean Direct</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label for="start-time">Depart Anchor</label>
+      <input id="start-time" type="time" value="15:30">
+    </div>
+
+    <div class="control-group">
+      <label for="jitter-slider">Delay Buffer: <strong id="jitter-value">+0 min</strong></label>
+      <input id="jitter-slider" type="range" min="0" max="15" step="1" value="0">
+    </div>
+
+    <div class="control-group checkbox-group">
+      <label>
+        <input id="return-toggle" type="checkbox" checked>
+        Return to Anchor
+      </label>
+    </div>
+  </section>
+
+  <main class="workspace">
+    <aside class="panel stops-panel no-print" aria-label="Stops and constraints">
+      <div class="panel-head">
+        <h2>Stops &amp; Constraints</h2>
+        <div class="panel-head-actions">
+          <button type="button" id="btn-add-stop" class="btn btn-small btn-primary">+ Add Stop</button>
+          <button type="button" id="btn-reset-preset" class="btn btn-small btn-secondary">Reset</button>
+        </div>
+      </div>
+      <p id="scenario-subtitle" class="muted-note"></p>
+      <div id="solver-error" class="alert-error" role="alert" hidden></div>
+      <div id="stops-list" class="stops-list"></div>
+    </aside>
+
+    <section class="main-column" aria-label="Optimized schedule and comparison">
+      <section class="kpi-strip" aria-label="Tour summary metrics">
+        <article class="kpi-card">
+          <span class="kpi-label">Tour Feasibility</span>
+          <strong id="kpi-feasible" class="kpi-value">-</strong>
+          <span id="kpi-method" class="kpi-foot">-</span>
+        </article>
+        <article class="kpi-card">
+          <span class="kpi-label">Travel Time</span>
+          <strong id="kpi-travel" class="kpi-value">-</strong>
+          <span id="kpi-travel-delta" class="kpi-foot">-</span>
+        </article>
+        <article class="kpi-card">
+          <span class="kpi-label">Total Finish</span>
+          <strong id="kpi-finish" class="kpi-value">-</strong>
+          <span id="kpi-span" class="kpi-foot">-</span>
+        </article>
+        <article class="kpi-card">
+          <span class="kpi-label">Min Buffer Slack</span>
+          <strong id="kpi-slack" class="kpi-value">-</strong>
+          <span id="kpi-wait" class="kpi-foot">-</span>
+        </article>
+      </section>
+
+      <div class="visual-grid">
+        <article class="panel map-panel">
+          <div class="panel-head">
+            <h2>Route Map Comparison</h2>
+            <div class="legend">
+              <span class="legend-item"><i class="swatch swatch-opt"></i> LoopLess Optimal</span>
+              <span class="legend-item"><i class="swatch swatch-fifo"></i> Listed Order (FIFO)</span>
+            </div>
+          </div>
+          <svg id="route-svg" class="route-svg" viewBox="0 0 460 320" role="img" aria-label="2D spatial comparison of baseline and optimized routes"></svg>
+          <p class="muted-note">Grid axes show miles from anchor (0, 0). Click any stop marker to highlight its leg below.</p>
+        </article>
+
+        <article class="panel compare-panel">
+          <div class="panel-head">
+            <h2>Solver vs Baselines</h2>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Strategy</th>
+                <th>On-Time</th>
+                <th>Travel</th>
+                <th>Wait</th>
+                <th>Span</th>
+                <th>Min Slack</th>
+              </tr>
+            </thead>
+            <tbody id="compare-tbody"></tbody>
+          </table>
+          <div class="scope-box">
+            <strong>Model Scope</strong>
+            <p>All coordinates, speeds, service durations, and transit buffers are explicit local inputs. No external routing, live traffic, or GPS data is fetched.</p>
+          </div>
+        </article>
+      </div>
+
+      <article class="panel timeline-panel">
+        <div class="panel-head">
+          <h2>Time-Window Gantt &amp; Turn-by-Turn Schedule</h2>
+          <span id="timeline-window-span" class="muted-note"></span>
+        </div>
+        <div id="timeline-list" class="timeline-list"></div>
+      </article>
+
+      <article id="benchmark-panel" class="panel benchmark-panel" hidden>
+        <div class="panel-head">
+          <h2>16-Case Reproducible Benchmark Report</h2>
+          <button type="button" id="btn-close-bench" class="btn btn-small btn-secondary no-print">Close</button>
+        </div>
+        <p id="benchmark-summary" class="bench-summary"></p>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Scenario</th>
+                <th>Mode</th>
+                <th>Stops</th>
+                <th>LoopLess</th>
+                <th>FIFO</th>
+                <th>EDF</th>
+                <th>Nearest</th>
+                <th>Saved vs FIFO</th>
+              </tr>
+            </thead>
+            <tbody id="benchmark-tbody"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>LoopLess deterministic planner (MIT License). Exact Branch-and-Bound for up to 12 stops; deterministic 2-opt for 13+ stops.</span>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
