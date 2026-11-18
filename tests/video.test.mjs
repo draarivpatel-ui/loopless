@@ -10,7 +10,8 @@ test('demo narration has 310 to 350 honest, plain-punctuation words', () => {
   assert.ok(narration.includes('45 small tours')); assert.ok(narration.includes('28.1 percent'));
   assert.ok(!/[\u2013\u2014\u2018\u2019\u201c\u201d]/u.test(narration));
 });
-test('video steps match the recorder schema, stay local, and cover all required scenes in 138 seconds', () => {
+// The final hold lands one whole second after the 165.21 s OmniVoice narration ends.
+test('video steps match the recorder schema, stay local, and cover all required scenes in 166 seconds', () => {
   const allowed = new Set(['at', 'wait', 'scrollTo', 'scrollBy', 'move', 'click', 'slide', 'type', 'select', 'key', 'eval']);
   for (const step of steps) {
     assert.ok(allowed.has(step.do));
@@ -20,7 +21,7 @@ test('video steps match the recorder schema, stay local, and cover all required 
   }
   const marks = steps.filter((step) => step.do === 'at').map((step) => step.s);
   assert.ok(marks.every((value, index) => index === 0 || value >= marks[index - 1]));
-  assert.equal(marks.at(-1), 138);
+  assert.equal(marks.at(-1), 166);
   for (const selector of ['#fifo-toggle', '#replay-play', '#replay-step', '#replay-slider', '#stop-name', '#btn-save-stop', '#jitter-slider', '#btn-export-ics', '#btn-print', '#btn-bench-mobile', '#capybara-buddy']) assert.ok(steps.some((step) => step.selector === selector), selector);
 });
 test('the one-page daily card has an accessible modal preview and a real native print action', () => {
