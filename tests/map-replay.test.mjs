@@ -76,4 +76,3 @@ test('empty and zero-travel tours never produce non-finite marker positions', ()
     assert.ok(Number.isFinite(position.x) && Number.isFinite(position.y));
   }
 });
-

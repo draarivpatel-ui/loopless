@@ -11,6 +11,7 @@ Verified on November 18, 2026, using the local HTTP server and T3 Code Preview. 
 - 15 exact searches, zero bounded searches, and one 14-stop heuristic case.
 - Zero typographic em or en dashes, smart quotes, personal email domains, or home-directory paths in shipped text and SVG files.
 - Production modules use created DOM nodes and textContent, with no HTML parsing or dynamic-code sinks.
+- Staged Git whitespace checks and a source assertion cover new-file EOF formatting.
 - Both text palettes meet 4.5 to 1 contrast for the tested foreground / background pairs.
 
 ## Fixed benchmark
@@ -73,4 +74,3 @@ A 12-stop tour with 80-character names measured **680.078125 px high**, below th
 These are fictional errands, synthetic mile coordinates, constant speeds, fixed overheads, and deterministic delays. There are no live GPS, road-network, traffic, actual transit timetable, or field-trial claims. Exactness requires a completed Branch-and-Bound search. Budget exhaustion and heuristic results are labeled.
 
 The owned Preview tab and temporary HTTP server are closed after verification.
-

@@ -271,4 +271,3 @@ test('analyzer caches a sweep across jitter changes and invalidates it after an 
   const three = analyze(editStop(fresh(), 'groceries', { durationMin: 40 }));
   assert.notEqual(three.sweep, two.sweep);
 });
-

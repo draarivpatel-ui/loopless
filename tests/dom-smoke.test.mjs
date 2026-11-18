@@ -110,6 +110,7 @@ test('shipped text and SVG files contain no typographic dashes, smart quotes, pr
       if (item.isDirectory()) { walk(full); continue; }
       if (!extensions.has(path.extname(full)) && item.name !== 'LICENSE') continue;
       const text = fs.readFileSync(full, 'utf8');
+      assert.ok(text.endsWith('\n') && !text.endsWith('\n\n'), 'Source must end with one newline in ' + full);
       assert.equal(forbidden.test(text), false, 'Typographic punctuation in ' + full);
       assert.equal(homePrefix.test(text), false, 'Private path in ' + full);
       assert.equal(personalMail.test(text), false, 'Personal email in ' + full);
