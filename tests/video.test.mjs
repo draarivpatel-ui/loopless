@@ -35,4 +35,3 @@ test('the one-page daily card has an accessible modal preview and a real native 
   assert.ok(css.includes('.print-only .data-table th:first-child { width: 38%; }'));
   assert.ok(css.includes('text-overflow: ellipsis'));
 });
-

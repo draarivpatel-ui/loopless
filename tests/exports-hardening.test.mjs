@@ -49,4 +49,3 @@ test('an empty day exports a valid empty calendar', () => {
   assert.ok(ics.startsWith('BEGIN:VCALENDAR\r\n')); assert.ok(ics.endsWith('END:VCALENDAR\r\n'));
   assert.equal(ics.includes('BEGIN:VEVENT'), false);
 });
-

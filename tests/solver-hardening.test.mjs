@@ -106,4 +106,3 @@ test('a deliberately exhausted node budget is labeled bounded and still beats or
   for (const baseline of Object.values(result.baselines)) assert.ok(compareSchedules(result.optimal, baseline) <= 0);
   assert.throws(() => solveOptimal(STUDIO_PRESETS[0], { nodeBudget: 0 }), /budget/);
 });
-

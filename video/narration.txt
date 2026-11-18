@@ -13,4 +13,3 @@ Branch-and-Bound searches possible orders and safely prunes weaker candidates. C
 Share a validated URL, save the day in this browser, or export a calendar, JSON, and a one-page card. No accounts or outside requests are needed. Coordinates are illustrative, without GPS, traffic, transit timetables, or field validation.
 
 And the tiny backpack belongs to our secret capybara. Click our chill errand buddy for one more reason to finish on time.
-
