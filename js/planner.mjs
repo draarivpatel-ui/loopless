@@ -17,8 +17,13 @@ export const DISTANCE_METRICS = Object.freeze({
   euclidean: 'euclidean',
 });
 
+export const BNB_NODE_BUDGET = 1_500_000;
+
 export function parseClockToMin(hhmm) {
-  if (typeof hhmm === 'number' && Number.isFinite(hhmm)) return Math.round(hhmm);
+  if (typeof hhmm === 'number') {
+    if (!Number.isInteger(hhmm) || hhmm < 0 || hhmm > 1439) throw new Error('Clock minutes must be an integer from 0 to 1439');
+    return hhmm;
+  }
   const str = String(hhmm || '').trim();
   const match = /^(\d{1,2}):(\d{2})$/.exec(str);
   if (!match) throw new Error(`Invalid clock time "${hhmm}" (expected HH:MM)`);
@@ -54,45 +59,55 @@ export function travelMinutes(a, b, modeSpec, metric = DISTANCE_METRICS.manhatta
 }
 
 export function normalizeScenario(raw) {
-  if (!raw || typeof raw !== 'object') throw new Error('Scenario object required');
-  const mode = TRANSIT_MODES[raw.mode] || TRANSIT_MODES.bike;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('Scenario object required');
+  const modeId = raw.mode ?? 'bike';
+  if (!Object.hasOwn(TRANSIT_MODES, modeId)) throw new Error('Unknown transit mode');
+  const mode = TRANSIT_MODES[modeId];
+  if (raw.metric != null && !Object.hasOwn(DISTANCE_METRICS, raw.metric)) throw new Error('Unknown distance metric');
   const metric = raw.metric === DISTANCE_METRICS.euclidean
     ? DISTANCE_METRICS.euclidean
     : DISTANCE_METRICS.manhattan;
   const anchor = {
     id: '__anchor__',
     name: raw.anchor?.name || 'Home Base',
-    x: Number(raw.anchor?.x ?? 0),
-    y: Number(raw.anchor?.y ?? 0),
+    x: boundedNumber(raw.anchor?.x ?? 0, -50, 50, 'Anchor x'),
+    y: boundedNumber(raw.anchor?.y ?? 0, -50, 50, 'Anchor y'),
   };
   const startMin = parseClockToMin(raw.startTime ?? '15:30');
   const returnToAnchor = raw.returnToAnchor !== false;
-  const transitJitterMin = Math.max(0, Number(raw.transitJitterMin ?? 0));
-  const rawStops = Array.isArray(raw.stops) ? raw.stops : [];
+  const transitJitterMin = boundedNumber(raw.transitJitterMin ?? 0, 0, 120, 'Transit delay', true);
+  if (raw.returnToAnchor != null && typeof raw.returnToAnchor !== 'boolean') throw new Error('Return to anchor must be a boolean');
+  if (raw.stops != null && !Array.isArray(raw.stops)) throw new Error('Stops must be an array');
+  const rawStops = raw.stops ?? [];
+  if (rawStops.length > 32) throw new Error('A tour can contain at most 32 stops');
 
   const stops = rawStops.map((s, idx) => {
+    if (!s || typeof s !== 'object' || Array.isArray(s)) throw new Error('Each stop must be an object');
     const id = String(s.id || `stop-${idx + 1}`);
+    if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,47}$/.test(id)) throw new Error('Stop IDs must be short, plain identifiers');
     const wStart = s.windowStart != null && s.windowStart !== ''
       ? parseClockToMin(s.windowStart)
       : startMin;
     const wEnd = s.windowEnd != null && s.windowEnd !== ''
       ? parseClockToMin(s.windowEnd)
       : 23 * 60 + 59;
+    if (wEnd < wStart) throw new Error(`Closing time must follow opening time for "${id}"`);
     return {
       id,
       name: String(s.name || `Stop ${idx + 1}`),
-      x: Number(s.x ?? 0),
-      y: Number(s.y ?? 0),
-      durationMin: Math.max(1, Math.round(Number(s.durationMin ?? 15))),
+      x: boundedNumber(s.x ?? 0, -50, 50, 'Stop x'),
+      y: boundedNumber(s.y ?? 0, -50, 50, 'Stop y'),
+      durationMin: boundedNumber(s.durationMin ?? 15, 1, 240, 'Service duration', true),
       windowStartMin: wStart,
-      windowEndMin: Math.max(wStart, wEnd),
-      priority: Math.min(3, Math.max(1, Math.round(Number(s.priority ?? 2)))),
+      windowEndMin: wEnd,
+      priority: boundedNumber(s.priority ?? 2, 1, 3, 'Priority', true),
       category: String(s.category || 'errand'),
       dependsOn: s.dependsOn ? String(s.dependsOn) : null,
     };
   });
 
   const ids = new Set(stops.map((s) => s.id));
+  if (ids.size !== stops.length) throw new Error('Stop IDs must be unique');
   for (const s of stops) {
     if (s.dependsOn && (!ids.has(s.dependsOn) || s.dependsOn === s.id)) {
       throw new Error(`Invalid dependency "${s.dependsOn}" on stop "${s.id}"`);
@@ -111,6 +126,13 @@ export function normalizeScenario(raw) {
     transitJitterMin,
     stops,
   };
+}
+
+function boundedNumber(value, min, max, label, integer = false) {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max || (integer && !Number.isInteger(value))) {
+    throw new Error(`${label} must be ${integer ? 'an integer' : 'a number'} from ${min} to ${max}`);
+  }
+  return value;
 }
 
 function validateNoCycle(stops) {
@@ -148,6 +170,7 @@ export function evaluateOrder(scenarioInput, orderIds) {
   if (ordered.length !== sc.stops.length) {
     throw new Error(`Order length (${ordered.length}) must match stop count (${sc.stops.length})`);
   }
+  if (new Set(orderIds).size !== orderIds.length) throw new Error('Order must visit every stop exactly once');
 
   let clockMin = sc.startMin;
   let prev = sc.anchor;
@@ -329,8 +352,9 @@ function topologicalRepair(stops) {
  * Exact Branch-and-Bound tour solver for N <= 12 stops;
  * restarts + bounded 2-opt polish for N > 12.
  */
-export function solveOptimal(scenarioInput) {
+export function solveOptimal(scenarioInput, options = {}) {
   const sc = normalizeScenario(scenarioInput);
+  const nodeBudget = boundedNumber(options.nodeBudget ?? BNB_NODE_BUDGET, 1, BNB_NODE_BUDGET, 'Search node budget', true);
   const n = sc.stops.length;
   if (n === 0) {
     const empty = evaluateOrder(sc, []);
@@ -342,7 +366,7 @@ export function solveOptimal(scenarioInput) {
   const nearest = baselineNearest(sc);
 
   if (n <= 12) {
-    const bnb = branchAndBoundSolve(sc, [fifo, edf, nearest]);
+    const bnb = branchAndBoundSolve(sc, [fifo, edf, nearest], nodeBudget);
     return {
       scenario: sc,
       method: bnb.exact ? 'exact-bnb' : 'bounded-bnb',
@@ -361,7 +385,7 @@ export function solveOptimal(scenarioInput) {
   };
 }
 
-function branchAndBoundSolve(sc, seeds) {
+function branchAndBoundSolve(sc, seeds, nodeBudget) {
   const stops = sc.stops;
   const n = stops.length;
   const idToIdx = new Map(stops.map((s, i) => [s.id, i]));
@@ -400,7 +424,7 @@ function branchAndBoundSolve(sc, seeds) {
   const used = new Uint8Array(n);
   const path = new Int32Array(n);
   const remainingService = stops.reduce((sum, s) => sum + s.durationMin, 0);
-  const MAX_BNB_NODES = 1_500_000;
+  const MAX_BNB_NODES = nodeBudget;
   let nodesVisited = 0;
   let budgetExhausted = false;
 
@@ -618,7 +642,7 @@ export function buildIcsCalendar(scenarioInput, evaluation, dateStr = '2026-11-2
     );
     lines.push(
       'BEGIN:VEVENT',
-      `UID:loopless-${sc.id}-${leg.stopId}@local`,
+      `UID:loopless-${encodeURIComponent(sc.id)}-${encodeURIComponent(leg.stopId)}-${startDate}@local`,
       `DTSTAMP:${baseCompactDate}T000000Z`,
       `DTSTART:${startDate}T${startH}${startM}00`,
       `DTEND:${endDate}T${endH}${endM}00`,
@@ -634,9 +658,11 @@ export function buildIcsCalendar(scenarioInput, evaluation, dateStr = '2026-11-2
 
 function formatCompactIcsDate(dateStr, dayOffset) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateStr).trim());
-  const base = match
-    ? new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])))
-    : new Date(Date.UTC(2026, 10, 21));
+  if (!match || Number(match[1]) < 1000 || Number(match[1]) > 9998) throw new Error('Calendar date must be a valid YYYY-MM-DD date');
+  const base = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  if (base.getUTCFullYear() !== Number(match[1]) || base.getUTCMonth() + 1 !== Number(match[2]) || base.getUTCDate() !== Number(match[3])) {
+    throw new Error('Calendar date does not exist');
+  }
   if (dayOffset) base.setUTCDate(base.getUTCDate() + dayOffset);
   const y = String(base.getUTCFullYear()).padStart(4, '0');
   const m = String(base.getUTCMonth() + 1).padStart(2, '0');
@@ -670,7 +696,7 @@ function foldIcsLine(line) {
 function escapeIcsText(value) {
   return String(value)
     .replace(/\\/g, '\\\\')
-    .replace(/\r?\n/g, '\\n')
+    .replace(/\r\n|\r|\n/g, '\\n')
     .replace(/;/g, '\\;')
     .replace(/,/g, '\\,');
 }

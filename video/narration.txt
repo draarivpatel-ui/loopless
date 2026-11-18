@@ -1,0 +1,16 @@
+Four errands should not turn into four trips across town. LoopLess is a route and schedule studio for students and families, built around closing times that ordinary task lists miss.
+
+This illustrative Houston after-school day includes a library return, peer tutoring, a STEM kit pickup, and groceries. In listed order, the bicycle model spends 134 minutes traveling and misses three deadlines. LoopLess keeps every errand, cuts travel to 78 minutes, and returns at 17:55. That saves 56 travel minutes and finishes 99 minutes earlier overall.
+
+The dashed route is FIFO. The solid route is the optimized tour. Numbered pins show the order. The timeline separates travel, waiting, and errand time. Press Play and the commuter moves with the timeline's clock. Pause, step forward, or scrub to any moment.
+
+Click the grid to add a stop. Select a pin to edit its name, coordinates, opening window, service duration, priority, or prerequisite. Invalid windows and dependency cycles are rejected. Undo and redo restore a working day.
+
+Compare walking, biking, bus and rail, or carpool. These are constant-speed models with per-leg overhead, without real transit schedules. The delay curve re-optimizes every whole-minute delay from zero through fifteen. This day survives twelve extra minutes per moving leg. At thirteen, the STEM kit deadline first breaks. The overload preset honestly reports impossible deadlines.
+
+Branch-and-Bound searches possible orders and safely prunes weaker candidates. Completed searches are exact. Budget-limited results are visibly labeled. Independent brute force found zero objective gap across 45 small tours. The fixed 16-day synthetic benchmark saves 631 travel minutes against FIFO, a 28.1 percent reduction.
+
+Share a validated URL, save the day in this browser, or export a calendar, JSON, and a one-page card. No accounts or outside requests are needed. Coordinates are illustrative, without GPS, traffic, transit timetables, or field validation.
+
+And the tiny backpack belongs to our secret capybara. Click our chill errand buddy for one more reason to finish on time.
+
