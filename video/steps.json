@@ -1,0 +1,371 @@
+[
+  {
+    "do": "select",
+    "selector": "#preset-select",
+    "value": "houston-stem"
+  },
+  {
+    "do": "eval",
+    "js": "if (document.documentElement.dataset.theme === 'dark') document.getElementById('theme-toggle').click();"
+  },
+  {
+    "do": "at",
+    "s": 14
+  },
+  {
+    "do": "move",
+    "selector": "#minutes-saved",
+    "ms": 600
+  },
+  {
+    "do": "at",
+    "s": 26
+  },
+  {
+    "do": "click",
+    "selector": "#fifo-toggle"
+  },
+  {
+    "do": "at",
+    "s": 28
+  },
+  {
+    "do": "click",
+    "selector": "#fifo-toggle"
+  },
+  {
+    "do": "at",
+    "s": 34
+  },
+  {
+    "do": "scrollTo",
+    "selector": ".map-panel",
+    "offset": 12,
+    "ms": 1100
+  },
+  {
+    "do": "at",
+    "s": 38
+  },
+  {
+    "do": "click",
+    "selector": "#replay-play"
+  },
+  {
+    "do": "at",
+    "s": 46
+  },
+  {
+    "do": "click",
+    "selector": "#replay-play"
+  },
+  {
+    "do": "at",
+    "s": 48
+  },
+  {
+    "do": "click",
+    "selector": "#replay-step"
+  },
+  {
+    "do": "at",
+    "s": 50
+  },
+  {
+    "do": "slide",
+    "selector": "#replay-slider",
+    "to": 60,
+    "ms": 1100
+  },
+  {
+    "do": "at",
+    "s": 54
+  },
+  {
+    "do": "click",
+    "selector": "#replay-reset"
+  },
+  {
+    "do": "at",
+    "s": 55
+  },
+  {
+    "do": "click",
+    "selector": "#route-svg .map-pin[data-stop-id='stem-kit'] .pin-circle"
+  },
+  {
+    "do": "at",
+    "s": 56
+  },
+  {
+    "do": "scrollTo",
+    "selector": "#stop-inspector",
+    "offset": 70,
+    "ms": 700
+  },
+  {
+    "do": "at",
+    "s": 58
+  },
+  {
+    "do": "eval",
+    "js": "document.getElementById('stop-name').value = '';"
+  },
+  {
+    "do": "at",
+    "s": 59
+  },
+  {
+    "do": "type",
+    "selector": "#stop-name",
+    "text": "STEM kit pickup / cables",
+    "cps": 22
+  },
+  {
+    "do": "at",
+    "s": 63
+  },
+  {
+    "do": "click",
+    "selector": "#btn-save-stop"
+  },
+  {
+    "do": "at",
+    "s": 65
+  },
+  {
+    "do": "scrollTo",
+    "selector": ".trip-settings",
+    "offset": 30,
+    "ms": 700
+  },
+  {
+    "do": "at",
+    "s": 66
+  },
+  {
+    "do": "click",
+    "selector": "#btn-undo"
+  },
+  {
+    "do": "at",
+    "s": 68
+  },
+  {
+    "do": "scrollTo",
+    "selector": "#mode-comparison",
+    "offset": 40,
+    "ms": 1000
+  },
+  {
+    "do": "at",
+    "s": 72
+  },
+  {
+    "do": "click",
+    "selector": "#mode-buttons button[data-mode='car']"
+  },
+  {
+    "do": "at",
+    "s": 74
+  },
+  {
+    "do": "click",
+    "selector": "#mode-buttons button[data-mode='bike']"
+  },
+  {
+    "do": "at",
+    "s": 76
+  },
+  {
+    "do": "scrollTo",
+    "selector": "#jitter-panel",
+    "offset": 60,
+    "ms": 900
+  },
+  {
+    "do": "at",
+    "s": 80
+  },
+  {
+    "do": "slide",
+    "selector": "#jitter-slider",
+    "to": 12,
+    "ms": 1200
+  },
+  {
+    "do": "at",
+    "s": 83
+  },
+  {
+    "do": "slide",
+    "selector": "#jitter-slider",
+    "to": 13,
+    "ms": 1200
+  },
+  {
+    "do": "at",
+    "s": 86
+  },
+  {
+    "do": "slide",
+    "selector": "#jitter-slider",
+    "to": 0,
+    "ms": 1000
+  },
+  {
+    "do": "at",
+    "s": 88
+  },
+  {
+    "do": "scrollTo",
+    "selector": ".studio-heading",
+    "offset": 30,
+    "ms": 700
+  },
+  {
+    "do": "at",
+    "s": 89
+  },
+  {
+    "do": "select",
+    "selector": "#preset-select",
+    "value": "honest-overload"
+  },
+  {
+    "do": "at",
+    "s": 92
+  },
+  {
+    "do": "select",
+    "selector": "#preset-select",
+    "value": "houston-stem"
+  },
+  {
+    "do": "at",
+    "s": 94
+  },
+  {
+    "do": "scrollTo",
+    "selector": "#how-it-works",
+    "offset": 70,
+    "ms": 1000
+  },
+  {
+    "do": "at",
+    "s": 101
+  },
+  {
+    "do": "click",
+    "selector": "#btn-bench-mobile"
+  },
+  {
+    "do": "at",
+    "s": 108
+  },
+  {
+    "do": "scrollTo",
+    "selector": "#benchmark-panel",
+    "offset": 60,
+    "ms": 600
+  },
+  {
+    "do": "at",
+    "s": 113
+  },
+  {
+    "do": "scrollTo",
+    "selector": "#exports-panel",
+    "offset": 80,
+    "ms": 1000
+  },
+  {
+    "do": "at",
+    "s": 115
+  },
+  {
+    "do": "click",
+    "selector": "#btn-export-ics"
+  },
+  {
+    "do": "at",
+    "s": 117
+  },
+  {
+    "do": "click",
+    "selector": "#btn-export-json"
+  },
+  {
+    "do": "at",
+    "s": 119
+  },
+  {
+    "do": "click",
+    "selector": "#btn-print"
+  },
+  {
+    "do": "at",
+    "s": 121
+  },
+  {
+    "do": "move",
+    "selector": "#btn-print-card",
+    "ms": 500
+  },
+  {
+    "do": "at",
+    "s": 123
+  },
+  {
+    "do": "click",
+    "selector": "#btn-close-card"
+  },
+  {
+    "do": "at",
+    "s": 124
+  },
+  {
+    "do": "scrollTo",
+    "selector": ".topbar",
+    "offset": 0,
+    "ms": 500
+  },
+  {
+    "do": "at",
+    "s": 125
+  },
+  {
+    "do": "click",
+    "selector": "#btn-share"
+  },
+  {
+    "do": "at",
+    "s": 127
+  },
+  {
+    "do": "click",
+    "selector": "#btn-close-share"
+  },
+  {
+    "do": "at",
+    "s": 129
+  },
+  {
+    "do": "scrollTo",
+    "selector": "#capybara-buddy",
+    "offset": 180,
+    "ms": 900
+  },
+  {
+    "do": "at",
+    "s": 131
+  },
+  {
+    "do": "click",
+    "selector": "#capybara-buddy"
+  },
+  {
+    "do": "at",
+    "s": 138
+  }
+]

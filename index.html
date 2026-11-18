@@ -2,184 +2,138 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'">
-  <title>LoopLess - Time-Windowed Daily Route &amp; Task Optimizer</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f4ef">
+  <meta name="description" content="Plan a better errand day. Compare routes, protect closing times, and replay an exact time-windowed tour on a local, illustrative mile grid.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>LoopLess | Route studio</title>
+  <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css?v=studio-c49dfe94a109">
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand-wrap">
-      <div class="brand-mark" aria-hidden="true">LL</div>
-      <div>
-        <h1 class="brand-title">LoopLess</h1>
-        <p class="brand-sub">Deterministic time-windowed route, errand, and task tour optimizer</p>
-      </div>
-    </div>
-    <div class="topbar-actions no-print">
-      <button type="button" id="btn-run-bench" class="btn btn-secondary">Run 16-Case Benchmark</button>
-      <button type="button" id="btn-export-ics" class="btn btn-primary">Export .ics Calendar</button>
-      <button type="button" id="btn-export-json" class="btn btn-secondary">Export JSON</button>
-      <button type="button" id="btn-print" class="btn btn-secondary">Print Day Card</button>
-    </div>
+  <a class="skip-link" href="#studio">Skip to route studio</a>
+  <header class="topbar no-print">
+    <a class="brand" href="#studio" aria-label="LoopLess route studio">
+      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="12" fill="currentColor"/><path d="M12 12v16h16M20 12h8v8" fill="none" stroke="var(--paper)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="20" r="3" fill="var(--orange)"/></svg>
+      <h1>LoopLess</h1>
+    </a>
+    <nav class="topnav" aria-label="Studio navigation">
+      <a href="#how-it-works" class="nav-link">How it works</a>
+      <button id="btn-run-bench" type="button" class="button quiet nav-benchmark">Run benchmark <span aria-hidden="true">&#8599;</span></button>
+      <button id="theme-toggle" type="button" class="button icon-button" aria-label="Switch to dark theme" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.2A8 8 0 0 1 9.8 4.5a8 8 0 1 0 9.7 9.7Z" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button>
+      <button id="btn-share" type="button" class="button orange-button">Share day <span aria-hidden="true">&#8599;</span></button>
+    </nav>
   </header>
 
-  <section class="controls-bar no-print" aria-label="Tour settings">
-    <div class="control-group">
-      <label for="preset-select">Scenario Preset</label>
-      <select id="preset-select"></select>
-    </div>
+  <main id="studio" class="studio">
+    <section class="studio-heading no-print">
+      <h2>Make room for your day.</h2>
+      <div class="preset-control"><label for="preset-select">Load an illustrative day</label><select id="preset-select"></select></div>
+    </section>
+    <details id="day-settings" class="day-settings no-print" open>
+      <summary><span>Day settings</span><span id="day-settings-summary" class="small-mono">15:30 / Bike</span></summary>
+    <section class="trip-settings" aria-label="Day settings">
+      <div class="setting"><label for="start-time">Leave base at</label><input id="start-time" type="time" value="15:30" required></div>
+      <div class="setting"><label for="mode-select">Get around by</label><select id="mode-select"><option value="walk">Walk</option><option value="bike" selected>Bike</option><option value="bus">Bus / Rail</option><option value="car">Carpool</option></select></div>
+      <div class="setting"><label for="metric-select">Distance model</label><select id="metric-select"><option value="manhattan">Street grid</option><option value="euclidean">Direct distance</option></select></div>
+      <label class="check-setting"><input id="return-toggle" type="checkbox" checked> Return to base</label>
+      <div class="history-actions"><button id="btn-undo" type="button" class="button quiet" disabled>Undo</button><button id="btn-redo" type="button" class="button quiet" disabled>Redo</button><button id="btn-reset-preset" type="button" class="button quiet">Reset day</button></div>
+    </section>
+    </details>
+    <section class="verdict-strip" aria-label="Before and after payoff">
+      <article class="verdict primary-verdict"><span class="metric-label">Minutes saved</span><div><strong id="minutes-saved">0</strong><span class="metric-unit">min</span></div><span id="travel-verdict" class="metric-detail">Computing FIFO vs LoopLess</span></article>
+      <article class="verdict"><span class="metric-label">Deadlines saved</span><div><strong id="deadlines-saved">0</strong><span id="deadline-denominator" class="metric-unit"></span></div><span id="deadline-verdict" class="metric-detail">Protecting your closing times</span></article>
+      <article class="verdict finish-verdict"><span id="finish-label" class="metric-label">Back at base</span><div><strong id="finish-time">00:00</strong><span id="feasible-badge" class="status-pill">Solving</span></div><span id="span-verdict" class="metric-detail">Every stop stays in the plan</span></article>
+    </section>
+    <div id="solver-error" class="alert-error no-print" role="alert" hidden></div>
+    <div id="share-panel" class="share-panel no-print" hidden><label for="share-url">Your day link</label><div><input id="share-url" type="text" readonly><button id="btn-copy-link" type="button" class="button primary-button">Copy link</button><button id="btn-close-share" type="button" class="button quiet">Close</button></div><p>Links contain the errand names and settings. Your day is also saved only in this browser.</p></div>
 
-    <div class="control-group">
-      <span class="control-label">Transit Mode</span>
-      <div id="mode-buttons" class="segmented" role="group" aria-label="Transit mode">
-        <button type="button" data-mode="walk">Walk</button>
-        <button type="button" data-mode="bike">Bike</button>
-        <button type="button" data-mode="bus">Bus / Rail</button>
-        <button type="button" data-mode="car">Car</button>
-      </div>
-    </div>
-
-    <div class="control-group">
-      <label for="metric-select">Distance Metric</label>
-      <select id="metric-select">
-        <option value="manhattan">Manhattan Street Grid</option>
-        <option value="euclidean">Euclidean Direct</option>
-      </select>
-    </div>
-
-    <div class="control-group">
-      <label for="start-time">Depart Anchor</label>
-      <input id="start-time" type="time" value="15:30">
-    </div>
-
-    <div class="control-group">
-      <label for="jitter-slider">Delay Buffer: <strong id="jitter-value">+0 min</strong></label>
-      <input id="jitter-slider" type="range" min="0" max="15" step="1" value="0">
-    </div>
-
-    <div class="control-group checkbox-group">
-      <label>
-        <input id="return-toggle" type="checkbox" checked>
-        Return to Anchor
-      </label>
-    </div>
-  </section>
-
-  <main class="workspace">
-    <aside class="panel stops-panel no-print" aria-label="Stops and constraints">
-      <div class="panel-head">
-        <h2>Stops &amp; Constraints</h2>
-        <div class="panel-head-actions">
-          <button type="button" id="btn-add-stop" class="btn btn-small btn-primary">+ Add Stop</button>
-          <button type="button" id="btn-reset-preset" class="btn btn-small btn-secondary">Reset</button>
-        </div>
-      </div>
-      <p id="scenario-subtitle" class="muted-note"></p>
-      <div id="solver-error" class="alert-error" role="alert" hidden></div>
-      <div id="stops-list" class="stops-list"></div>
-    </aside>
-
-    <section class="main-column" aria-label="Optimized schedule and comparison">
-      <section class="kpi-strip" aria-label="Tour summary metrics">
-        <article class="kpi-card">
-          <span class="kpi-label">Tour Feasibility</span>
-          <strong id="kpi-feasible" class="kpi-value">-</strong>
-          <span id="kpi-method" class="kpi-foot">-</span>
+    <div class="workspace">
+      <section class="route-column" aria-label="Route and schedule workbench">
+        <article class="panel map-panel">
+          <div class="panel-heading map-heading"><h3>A little less back-and-forth.</h3><span id="solver-method" class="method-pill">Exact Branch-and-Bound</span></div>
+          <div class="route-legends" aria-label="Map route comparison">
+            <label class="route-legend before-legend"><input id="fifo-toggle" type="checkbox" checked><span class="path-sample dashed" aria-hidden="true"></span><span>Before / FIFO<strong id="fifo-map-metric">Listed order</strong></span></label>
+            <div class="route-legend after-legend"><span class="path-sample solid" aria-hidden="true"></span><span>After / LoopLess<strong id="optimal-map-metric">Optimized order</strong></span></div>
+            <span class="grid-chip">2D mile grid</span>
+          </div>
+          <div class="map-surface"><svg id="route-svg" class="route-svg" viewBox="0 0 900 430" role="group" aria-label="Interactive illustrative mile-grid route map" aria-describedby="map-help"></svg><span id="map-coordinates" class="coordinate-readout" aria-hidden="true">x 0.0 / y 0.0 mi</span></div>
+          <div class="map-footnote"><span id="map-help">Click the grid to add. Select a pin to edit.</span><span>Illustrative coordinates. No live GPS or traffic.</span></div>
+          <div id="route-replay" class="replay-controls no-print" aria-label="Animated route replay">
+            <div class="replay-buttons"><button id="replay-play" type="button" class="button primary-button">Play</button><button id="replay-step" type="button" class="button quiet">Step</button><button id="replay-reset" type="button" class="button icon-button" aria-label="Restart route replay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8a8 8 0 1 1-1 7M5 3v6h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button></div>
+            <div class="replay-scrub"><label for="replay-slider" class="sr-only">Replay elapsed minutes</label><input id="replay-slider" type="range" min="0" max="1" step="0.1" value="0"><div><span id="replay-status">Ready at base</span><strong id="replay-clock">15:30</strong></div></div>
+          </div>
         </article>
-        <article class="kpi-card">
-          <span class="kpi-label">Travel Time</span>
-          <strong id="kpi-travel" class="kpi-value">-</strong>
-          <span id="kpi-travel-delta" class="kpi-foot">-</span>
+        <article id="schedule-panel" class="panel timeline-panel">
+          <div class="panel-heading"><h3>Your day, in order.</h3><span id="timeline-window-span" class="small-mono"></span></div>
+          <div class="timeline-legend"><span><i class="travel-swatch"></i> Travel</span><span><i class="wait-swatch"></i> Wait</span><span><i class="service-swatch"></i> Errand</span><span><i class="window-swatch"></i> Open window</span></div>
+          <div id="timeline-axis" class="timeline-axis"></div><div id="timeline-list" class="timeline-list"></div><div id="return-summary" class="return-summary"></div>
         </article>
-        <article class="kpi-card">
-          <span class="kpi-label">Total Finish</span>
-          <strong id="kpi-finish" class="kpi-value">-</strong>
-          <span id="kpi-span" class="kpi-foot">-</span>
+        <article id="mode-comparison" class="panel modes-panel no-print">
+          <div class="panel-heading"><h3>Find your way around.</h3><span class="small-mono">Same errands / four modes</span></div>
+          <div id="mode-buttons" class="mode-matrix" role="group" aria-label="Live transit mode comparison"></div>
+          <p class="model-note">Illustrative speeds and per-leg overheads. Bus / Rail is a simplified model, without timetables or actual transit lines.</p>
         </article>
-        <article class="kpi-card">
-          <span class="kpi-label">Min Buffer Slack</span>
-          <strong id="kpi-slack" class="kpi-value">-</strong>
-          <span id="kpi-wait" class="kpi-foot">-</span>
+        <article id="jitter-panel" class="panel jitter-panel no-print">
+          <div class="panel-heading"><h3>A buffer for the unexpected.</h3><span id="jitter-exactness" class="method-pill">Exact sweep</span></div>
+          <div class="jitter-verdict"><strong id="jitter-tipping">Calculating delay tolerance</strong><span id="jitter-current-margin"></span></div>
+          <svg id="jitter-chart" viewBox="0 0 680 190" role="img" aria-label="Deadline margin across transit delays from zero to fifteen minutes"></svg>
+          <div class="jitter-control"><label for="jitter-slider">Delay on each moving leg <strong id="jitter-value">+0 min</strong></label><input id="jitter-slider" type="range" min="0" max="15" step="1" value="0"></div>
+          <p class="model-note">Re-optimizes at every whole-minute delay from +0 to +15. Zero-distance legs get no extra delay. A closing time means the errand must be finished by that minute.</p>
+          <details class="sweep-details"><summary>Inspect all 16 delay results</summary><div id="jitter-table"></div></details>
+        </article>
+        <article class="panel baseline-panel">
+          <div class="panel-heading"><h3>Show the working.</h3><span class="small-mono">All stops / all strategies</span></div>
+          <table class="data-table comparison-table"><caption class="sr-only">LoopLess compared with three prerequisite-respecting baseline strategies</caption><thead><tr><th scope="col">Strategy</th><th scope="col">On time</th><th scope="col">Travel</th><th scope="col">Wait</th><th scope="col">Day span</th></tr></thead><tbody id="compare-tbody"></tbody></table>
         </article>
       </section>
-
-      <div class="visual-grid">
-        <article class="panel map-panel">
-          <div class="panel-head">
-            <h2>Route Map Comparison</h2>
-            <div class="legend">
-              <span class="legend-item"><i class="swatch swatch-opt"></i> LoopLess Optimal</span>
-              <span class="legend-item"><i class="swatch swatch-fifo"></i> Listed Order (FIFO)</span>
-            </div>
-          </div>
-          <svg id="route-svg" class="route-svg" viewBox="0 0 460 320" role="img" aria-label="2D spatial comparison of baseline and optimized routes"></svg>
-          <p class="muted-note">Grid axes show miles from anchor (0, 0). Click any stop marker to highlight its leg below.</p>
+      <aside class="stops-column no-print" aria-label="Errand editor">
+        <article class="panel stops-panel">
+          <div class="panel-heading"><h3>Your errands</h3><button id="btn-add-stop" type="button" class="button quiet add-button">+ Add</button></div>
+          <div class="stop-list-heading"><span>Listed order (FIFO)</span><span id="stop-count">0 / 12 stops</span></div><div id="stops-list" class="stops-list"></div>
+          <section id="stop-inspector" class="stop-inspector" aria-label="Selected stop inspector">
+            <div class="inspector-heading"><h4>Edit this errand</h4><span id="inspector-stop-id" class="small-mono"></span></div>
+            <form id="stop-form">
+              <div class="field"><label for="stop-name">Name</label><input id="stop-name" name="name" type="text" maxlength="80" required autocomplete="off"></div>
+              <div class="field-pair"><div class="field"><label for="stop-x">X / miles</label><input id="stop-x" name="x" type="number" min="-10" max="10" step="any" required></div><div class="field"><label for="stop-y">Y / miles</label><input id="stop-y" name="y" type="number" min="-10" max="10" step="any" required></div></div>
+              <div class="field-pair"><div class="field"><label for="stop-open">Opens at</label><input id="stop-open" name="windowStart" type="time" required></div><div class="field"><label for="stop-close">Finish by</label><input id="stop-close" name="windowEnd" type="time" required></div></div>
+              <div class="field-pair"><div class="field"><label for="stop-duration">Errand / min</label><input id="stop-duration" name="durationMin" type="number" min="1" max="240" step="1" required></div><div class="field"><label for="stop-priority">Priority</label><select id="stop-priority" name="priority"><option value="1">1 / Flexible</option><option value="2">2 / Normal</option><option value="3">3 / Important</option></select></div></div>
+              <div class="field"><label for="stop-prerequisite">Complete this first</label><select id="stop-prerequisite" name="dependsOn"><option value="">No prerequisite</option></select></div>
+              <div class="inspector-actions"><button id="btn-save-stop" type="submit" class="button primary-button">Save changes</button><button id="btn-delete-stop" type="button" class="button danger-button">Delete</button></div>
+              <p id="inspector-feedback" class="inspector-feedback" role="status">Changes are applied when you save.</p>
+            </form>
+          </section>
+          <div id="empty-editor" class="empty-editor" hidden>Start with a click on the grid, or add an errand here.</div>
         </article>
-
-        <article class="panel compare-panel">
-          <div class="panel-head">
-            <h2>Solver vs Baselines</h2>
-          </div>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Strategy</th>
-                <th>On-Time</th>
-                <th>Travel</th>
-                <th>Wait</th>
-                <th>Span</th>
-                <th>Min Slack</th>
-              </tr>
-            </thead>
-            <tbody id="compare-tbody"></tbody>
-          </table>
-          <div class="scope-box">
-            <strong>Model Scope</strong>
-            <p>All coordinates, speeds, service durations, and transit buffers are explicit local inputs. No external routing, live traffic, or GPS data is fetched.</p>
-          </div>
+        <button id="capybara-buddy" type="button" class="capybara-buddy" aria-pressed="false" aria-label="Meet the secret Capybara Errand Buddy">
+          <svg class="capybara-art" viewBox="0 0 160 110" aria-hidden="true"><ellipse cx="79" cy="97" rx="56" ry="7" fill="var(--capy-shadow)"/><g class="capy-body"><path d="M39 54c0-20 13-32 38-32h18c27 0 38 17 38 37v24H41Z" fill="#ad8158" stroke="#513b2b" stroke-width="2"/><path d="M106 42c19-4 34 4 37 16 4 17-11 24-31 21l-24-3V46Z" fill="#bf9469" stroke="#513b2b" stroke-width="2"/><path d="M46 74v18c0 7 12 7 12 0V80M89 78v14c0 7 12 7 12 0V80M121 77v13c0 7 11 7 11 0V77" fill="#ad8158" stroke="#513b2b" stroke-width="2"/><ellipse cx="101" cy="37" rx="7" ry="9" fill="#ad8158" stroke="#513b2b" stroke-width="2"/><ellipse cx="102" cy="37" rx="3" ry="4" fill="#755035"/><circle cx="125" cy="55" r="3" fill="#30271e"/><path d="M136 65h5m-20 5c3 2 7 2 10 0" fill="none" stroke="#513b2b" stroke-width="2" stroke-linecap="round"/><rect x="52" y="34" width="28" height="34" rx="10" fill="#39594a" stroke="#263e32" stroke-width="2"/><path d="M60 37V26m12 10V26" stroke="#263e32" stroke-width="3"/><path d="M55 53h22" stroke="#e5c7a0" stroke-width="2"/><circle cx="96" cy="18" r="11" fill="#f38a42" stroke="#8e4527" stroke-width="2"/><path d="M96 8c3-7 11-8 13-5-4 5-8 6-13 5Z" fill="#39634c"/><path d="M115 60h4" stroke="#8a4e33" stroke-width="2"/></g></svg>
+          <span><strong>One very chill errand buddy.</strong><span id="capybara-message">A tiny backpack. A better day.</span></span><span class="capy-spark" aria-hidden="true">+</span>
+        </button>
+        <article id="how-it-works" class="panel explain-panel">
+          <div class="panel-heading"><h3>Every minute has a reason.</h3></div>
+          <ol class="explain-list"><li><span>01</span><div><strong>Keep every errand.</strong><p>Opening times, service minutes, closing times, and prerequisites stay in the model.</p></div></li><li><span>02</span><div><strong>Search the possible orders.</strong><p>Branch-and-Bound safely prunes orders that cannot improve the best schedule.</p></div></li><li><span>03</span><div><strong>Tell the whole story.</strong><p>Minimize missed deadlines, then lateness, day span, travel, and finally maximize minimum slack. All tasks are kept. Priority breaks EDF ties.</p></div></li></ol>
+          <details><summary>Model limits and search guarantees</summary><p>The studio supports up to 12 errands. A completed Branch-and-Bound search is exact. If the 1.5 million node budget is reached, the result is labeled bounded search. The benchmark also includes a 14-stop heuristic example.</p><p>Houston / Sugar Land presets are fictional. Coordinates are illustrative miles, with no real addresses, road network, GPS, traffic, transit timetable, or field validation. Deadlines are completion deadlines; time windows do not span midnight.</p></details>
+          <button id="btn-bench-mobile" type="button" class="button quiet">Run 16-case benchmark</button>
+          <div id="compute-status" class="compute-status" role="status">Preparing local solver</div>
         </article>
-      </div>
-
-      <article class="panel timeline-panel">
-        <div class="panel-head">
-          <h2>Time-Window Gantt &amp; Turn-by-Turn Schedule</h2>
-          <span id="timeline-window-span" class="muted-note"></span>
-        </div>
-        <div id="timeline-list" class="timeline-list"></div>
-      </article>
-
-      <article id="benchmark-panel" class="panel benchmark-panel" hidden>
-        <div class="panel-head">
-          <h2>16-Case Reproducible Benchmark Report</h2>
-          <button type="button" id="btn-close-bench" class="btn btn-small btn-secondary no-print">Close</button>
-        </div>
-        <p id="benchmark-summary" class="bench-summary"></p>
-        <div class="table-scroll">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Scenario</th>
-                <th>Mode</th>
-                <th>Stops</th>
-                <th>LoopLess</th>
-                <th>FIFO</th>
-                <th>EDF</th>
-                <th>Nearest</th>
-                <th>Saved vs FIFO</th>
-              </tr>
-            </thead>
-            <tbody id="benchmark-tbody"></tbody>
-          </table>
-        </div>
-      </article>
+      </aside>
+    </div>
+    <section id="exports-panel" class="panel exports-panel no-print">
+      <h3>Take your day with you.</h3><div class="export-actions"><div class="field calendar-field"><label for="export-date">Calendar day</label><input id="export-date" type="date" value="2026-11-21" min="1000-01-01" max="9998-12-31" required></div><button id="btn-export-ics" type="button" class="button primary-button">Export .ics</button><button id="btn-export-json" type="button" class="button quiet">Export JSON</button><button id="btn-print" type="button" class="button quiet">Print daily card</button></div><span id="export-status" class="export-status" role="status">Calendar uses local floating times. The daily card fits one page.</span>
     </section>
+    <section id="benchmark-panel" class="panel benchmark-panel no-print" hidden>
+      <div class="panel-heading"><h3>The reproducible benchmark.</h3><button id="btn-close-bench" type="button" class="button quiet">Close</button></div><p id="benchmark-summary" class="benchmark-summary"></p>
+      <div id="benchmark-bars" class="benchmark-bars" role="img" aria-label="Total travel minutes compared across four strategies"></div>
+      <table class="data-table benchmark-table"><caption>16 fixed synthetic scenarios, including one intentional overload and one 14-stop heuristic case</caption><thead><tr><th scope="col">Scenario</th><th scope="col">Stops</th><th scope="col">LoopLess travel</th><th scope="col">FIFO travel</th><th scope="col">Missed / optimal</th><th scope="col">Search</th></tr></thead><tbody id="benchmark-tbody"></tbody></table>
+    </section>
+    <article id="daily-card" class="print-only" aria-label="One page daily card"></article>
+    <dialog id="print-dialog" class="card-dialog no-print" aria-labelledby="card-dialog-title">
+      <div class="panel-heading"><h3 id="card-dialog-title">Your daily card</h3><div class="card-dialog-actions"><button id="btn-print-card" type="button" class="button primary-button">Print one page</button><button id="btn-close-card" type="button" class="button quiet">Close</button></div></div>
+      <div id="card-preview" class="card-preview"></div>
+    </dialog>
+    <footer class="footer no-print"><span>LoopLess / More day. Less detour.</span><span>Built locally. No accounts. No external requests.</span><span id="save-status" role="status">Your illustrative day is ready.</span></footer>
+    <div id="live-announcement" class="sr-only" role="status" aria-live="polite"></div>
   </main>
-
-  <footer class="footer">
-    <span>LoopLess deterministic planner (MIT License). Exact Branch-and-Bound for up to 12 stops; deterministic 2-opt for 13+ stops.</span>
-  </footer>
-
-  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/app.js?v=studio-c49dfe94a109"></script>
 </body>
 </html>

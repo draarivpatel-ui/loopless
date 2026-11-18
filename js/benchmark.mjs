@@ -3,8 +3,8 @@
  * Browser-safe pure ES module (zero Node imports).
  */
 
-import { solveOptimal, compareSchedules } from './planner.mjs';
-import { BENCHMARK_CORPUS } from './scenarios.mjs';
+import { solveOptimal, compareSchedules } from './planner.mjs?v=studio-c49dfe94a109';
+import { BENCHMARK_CORPUS } from './scenarios.mjs?v=studio-c49dfe94a109';
 
 export function runBenchmarkSuite(corpus = BENCHMARK_CORPUS) {
   const rows = [];
@@ -80,7 +80,7 @@ export function runBenchmarkSuite(corpus = BENCHMARK_CORPUS) {
     : 0;
 
   return {
-    version: '1.0.0',
+    version: '2.0.0',
     scenarioCount: corpus.length,
     feasibleCount,
     baselinesFeasible: {
@@ -102,9 +102,14 @@ export function runBenchmarkSuite(corpus = BENCHMARK_CORPUS) {
     },
     strictlyBeatsFifo,
     strictlyBeatsOrTiesAll,
+    searchCounts: {
+      exact: rows.filter((row) => ['exact', 'exact-bnb'].includes(row.method)).length,
+      bounded: rows.filter((row) => row.method === 'bounded-bnb').length,
+      heuristic: rows.filter((row) => row.method === 'heuristic-2opt').length,
+    },
     guardrails: [
       'Coordinates, walking/cycling/bus/car speeds, and stop durations are synthetic model parameters, not live GPS or real-time traffic.',
-      'Exact optimality (zero gap) is guaranteed by Branch-and-Bound for scenarios up to 12 stops; 13+ stops use deterministic 2-opt local search.',
+      'Completed Branch-and-Bound searches are exact for up to 12 stops. A 1.5 million node budget can produce a labeled bounded result. Tours with 13+ stops use deterministic 2-opt local search.',
     ],
     rows,
   };

@@ -1,0 +1,181 @@
+{
+  "viewport": [
+    1920,
+    1080
+  ],
+  "clickCount": 19,
+  "timeMarksSkippedForGeometryCheck": true,
+  "targets": [
+    {
+      "height": 16,
+      "hit": true,
+      "selector": "#fifo-toggle",
+      "visible": true,
+      "width": 16,
+      "x": 152.515625,
+      "y": 510.75
+    },
+    {
+      "height": 16,
+      "hit": true,
+      "selector": "#fifo-toggle",
+      "visible": true,
+      "width": 16,
+      "x": 152.515625,
+      "y": 510.75
+    },
+    {
+      "height": 40,
+      "hit": true,
+      "selector": "#replay-play",
+      "visible": true,
+      "width": 52.7578125,
+      "x": 164.89453125,
+      "y": 166
+    },
+    {
+      "height": 40,
+      "hit": true,
+      "selector": "#replay-play",
+      "visible": true,
+      "width": 64.2890625,
+      "x": 170.66015625,
+      "y": 166
+    },
+    {
+      "height": 40,
+      "hit": true,
+      "selector": "#replay-step",
+      "visible": true,
+      "width": 55.328125,
+      "x": 223.9375,
+      "y": 166
+    },
+    {
+      "height": 40,
+      "hit": true,
+      "selector": "#replay-reset",
+      "visible": true,
+      "width": 40,
+      "x": 276.6015625,
+      "y": 166
+    },
+    {
+      "height": 26.6976318359375,
+      "hit": true,
+      "selector": "#route-svg .map-pin[data-stop-id='stem-kit'] .pin-circle",
+      "visible": true,
+      "width": 26.697723388671875,
+      "x": 512.4069976806641,
+      "y": 411
+    },
+    {
+      "height": 44,
+      "hit": true,
+      "selector": "#btn-save-stop",
+      "visible": true,
+      "width": 260.0546875,
+      "x": 1566.51171875,
+      "y": 499.5
+    },
+    {
+      "height": 44,
+      "hit": true,
+      "selector": "#btn-undo",
+      "visible": true,
+      "width": 59.6875,
+      "x": 1612.15625,
+      "y": 72
+    },
+    {
+      "height": 109.5,
+      "hit": true,
+      "selector": "#mode-buttons button[data-mode='car']",
+      "visible": true,
+      "width": 298.4921875,
+      "x": 1219.23828125,
+      "y": 161.75
+    },
+    {
+      "height": 109.5,
+      "hit": true,
+      "selector": "#mode-buttons button[data-mode='bike']",
+      "visible": true,
+      "width": 298.4921875,
+      "x": 602.25390625,
+      "y": 161.75
+    },
+    {
+      "height": 44,
+      "hit": true,
+      "selector": "#btn-bench-mobile",
+      "visible": true,
+      "width": 187.1796875,
+      "x": 1530.07421875,
+      "y": 465.15625
+    },
+    {
+      "height": 44,
+      "hit": true,
+      "selector": "#btn-export-ics",
+      "visible": true,
+      "width": 101.3515625,
+      "x": 1460.32421875,
+      "y": 145.6875
+    },
+    {
+      "height": 44,
+      "hit": true,
+      "selector": "#btn-export-json",
+      "visible": true,
+      "width": 114.9765625,
+      "x": 1578.48828125,
+      "y": 145.6875
+    },
+    {
+      "height": 44,
+      "hit": true,
+      "selector": "#btn-print",
+      "visible": true,
+      "width": 129.5078125,
+      "x": 1710.73046875,
+      "y": 145.6875
+    },
+    {
+      "height": 44,
+      "hit": true,
+      "selector": "#btn-close-card",
+      "visible": true,
+      "width": 69.5859375,
+      "x": 1250.20703125,
+      "y": 281.953125
+    },
+    {
+      "height": 44,
+      "hit": true,
+      "selector": "#btn-share",
+      "visible": true,
+      "width": 117.1328125,
+      "x": 1801.91796875,
+      "y": 38.5
+    },
+    {
+      "height": 44,
+      "hit": true,
+      "selector": "#btn-close-share",
+      "visible": true,
+      "width": 69.5859375,
+      "x": 1746.69140625,
+      "y": 498
+    },
+    {
+      "height": 113,
+      "hit": true,
+      "selector": "#capybara-buddy",
+      "visible": true,
+      "width": 385,
+      "x": 1607.984375,
+      "y": 236.5
+    }
+  ]
+}
