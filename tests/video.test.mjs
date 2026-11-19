@@ -10,7 +10,7 @@ test('demo narration has 310 to 350 honest, plain-punctuation words', () => {
   assert.ok(narration.includes('45 small tours')); assert.ok(narration.includes('28.1 percent'));
   assert.ok(!/[\u2013\u2014\u2018\u2019\u201c\u201d]/u.test(narration));
 });
-// The final hold lands one whole second after the 165.21 s OmniVoice narration ends.
+// The final hold lands one whole second after the 165.21 s recorded narration ends.
 test('video steps match the recorder schema, stay local, and cover all required scenes in 166 seconds', () => {
   const allowed = new Set(['at', 'wait', 'scrollTo', 'scrollBy', 'move', 'click', 'slide', 'type', 'select', 'key', 'eval']);
   for (const step of steps) {
