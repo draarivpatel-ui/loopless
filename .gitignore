@@ -2,3 +2,5 @@
 node_modules/
 coverage/
 *.log
+video/demo.mp4
+video/narration.wav

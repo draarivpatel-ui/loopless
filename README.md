@@ -120,7 +120,7 @@ Nearby pins can move slightly for readable hit targets, with leader lines to the
 
 ## Demo kit
 
-[321-word narration](video/narration.txt) and [138-second recorder steps](video/steps.json) cover the FIFO overlay, route replay, editing, undo, mode changes, the +12 / +13 minute boundary, honest overload, benchmark, calendar and JSON downloads, daily-card preview, sharing, and the capybara.
+[321-word narration](video/narration.txt) and [166-second recorder steps](video/steps.json) cover the FIFO overlay, route replay, editing, undo, mode changes, the +12 / +13 minute boundary, honest overload, benchmark, calendar and JSON downloads, daily-card preview, sharing, and the capybara.
 
 The steps use the existing make-video recorder schema. From this repository, a recording can be made with the station's script.
 
@@ -128,7 +128,7 @@ The steps use the existing make-video recorder schema. From this repository, a r
 node ../../make-video.mjs --url http://127.0.0.1:18932/ --steps video/steps.json --out video/demo.mp4
 ~~~
 
-The narration is intended for about 2 minutes 18 seconds at 140 words per minute. Recording assets are source files; the repository does not claim a produced or uploaded video.
+The narration and closing hold span 166 seconds (about 2 minutes 46 seconds). Recording assets are source files; the repository does not claim a produced or uploaded video.
 
 ## Source map
 
