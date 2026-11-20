@@ -12,6 +12,7 @@ Built as a Technical Track productivity prototype for a hackathon. The original 
 - Click empty map space to add an errand. Select a numbered pin to inspect or edit its name, coordinates, opening window, service duration, priority, and prerequisite.
 - Transactional validation, cycle rejection, safe deletion, and 40-step undo / redo. Deleting a prerequisite requires removing the dependent constraint first.
 - Four illustrative presets covering after-school STEM errands, Saturday family groceries and library tasks, hackathon hardware supplies, and intentional overload.
+- A one-click greedy-versus-exact verdict above the workspace, plus an explicit infeasible-window diagnosis that accounts for the selected delay and prerequisite chains.
 - A live four-mode comparison and an independently re-optimized 16-point delay curve from +0 through +15 minutes per moving leg.
 - Strictly validated share hashes, browser persistence, RFC 5545 calendar export, JSON export, and a one-page daily card with a modal preview.
 - A local Web Worker with a labeled main-thread fallback, stale-response protection, and no dependencies or external requests.
@@ -35,7 +36,7 @@ npm run eval:json
 
 ## Verified results
 
-The deterministic Node suite has **157 passing tests, zero failures**. Tests cover independent brute-force optimality, all fixed benchmark scenarios, editor validation, cycles, undo / redo, hostile hashes, prototype pollution, XSS rejection, persistence failures, transit comparisons, exact delay tipping points, map projection, co-located pins, route replay, RFC 5545 edge cases, DOM contracts, local requests, both contrast palettes, demo contracts, and source hygiene.
+The deterministic Node suite has **169 passing tests, zero failures**. Tests cover independent brute-force optimality, all fixed benchmark scenarios, editor validation, cycles, undo / redo, hostile hashes, prototype pollution, XSS rejection, persistence failures, transit comparisons, exact delay tipping points, map projection, co-located pins, route replay, RFC 5545 edge cases, DOM contracts, local requests, both contrast palettes, demo contracts, source hygiene, infeasible windows under jitter and prerequisite chains, one-minute margins, 6-stop budget exhaustion, tampered share links, above-the-fold verdict placement, and honest lateness labels.
 
 **Zero objective gap on 45 small tours with N <= 7**, using an independent brute-force oracle that recomputes travel, waiting, service, deadlines, and slack. These include 13 small fixed benchmark cases, all four new studio presets, and 28 reproducible seeded cases. The seeded cases mix modes, metrics, prerequisites, jitter, no-return trips, co-location, and tight windows.
 
