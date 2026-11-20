@@ -1,4 +1,4 @@
-import { formatMinToClock, buildIcsCalendar, compareSchedules } from './planner.mjs?v=studio-c49dfe94a109';
+import { formatMinToClock, buildIcsCalendar, compareSchedules, compareGreedyExact, diagnoseInfeasibleWindows } from './planner.mjs?v=studio-c49dfe94a109';
 import { STUDIO_PRESETS } from './presets.mjs?v=studio-c49dfe94a109';
 import { validateTour, addStop, editStop, deleteStop, createHistory, createAnalyzer, encodeTourHash, decodeTourHash, readStoredTour, writeStoredTour, MAX_STOPS } from './studio.mjs?v=studio-c49dfe94a109';
 import { createMapProjection, layoutMapPins, routePoints, replayPosition, nextReplayStep } from './map.mjs?v=studio-c49dfe94a109';
@@ -27,7 +27,7 @@ const ui = {
   jitterValue: document.getElementById('jitter-value'), jitterTip: document.getElementById('jitter-tipping'),
   jitterMargin: document.getElementById('jitter-current-margin'), jitterChart: document.getElementById('jitter-chart'),
   jitterExactness: document.getElementById('jitter-exactness'), jitterTable: document.getElementById('jitter-table'),
-  compareBody: document.getElementById('compare-tbody'), add: document.getElementById('btn-add-stop'),
+  compareBody: document.getElementById('compare-tbody'), greedyExact: document.getElementById('greedy-exact-result'), infeasible: document.getElementById('infeasible-diagnosis'), compareGreedy: document.getElementById('btn-compare-greedy-exact'), add: document.getElementById('btn-add-stop'),
   stops: document.getElementById('stops-list'), count: document.getElementById('stop-count'),
   inspector: document.getElementById('stop-inspector'), inspectorId: document.getElementById('inspector-stop-id'),
   form: document.getElementById('stop-form'), name: document.getElementById('stop-name'),
@@ -196,7 +196,7 @@ function acceptAnalysis(message) {
   if (message.error) { setBusy(false); errorMessage(new Error(message.error)); return; }
   state.analysis = message.result; state.elapsed = 0;
   setBusy(false); renderSummary(); renderStops(); renderMap(); renderTimeline();
-  renderModes(); renderJitter(); renderComparison(); renderDailyCard(); updateReplay(); reactCapybara();
+  renderModes(); renderJitter(); renderComparison(); renderGreedyExact(); renderDailyCard(); updateReplay(); reactCapybara();
   ui.compute.textContent = state.execution + ' / ' + methodLabel(state.analysis.solution.method) + ' / no external routing';
   announce('Route updated. ' + state.analysis.solution.optimal.missedDeadlines + ' missed deadlines.');
 }
@@ -379,6 +379,13 @@ function renderComparison() {
   const result = state.analysis.solution;
   ui.compareBody.replaceChildren();
   for (const [label, schedule] of [['LoopLess', result.optimal], ['Listed order (FIFO)', result.baselines.fifo], ['Earliest deadline', result.baselines.edf], ['Nearest neighbor', result.baselines.nearest]]) appendCells(ui.compareBody, [label, state.tour.stops.length - schedule.missedDeadlines + '/' + state.tour.stops.length, schedule.totalTravelMin + ' min', schedule.totalWaitMin + ' min', schedule.totalSpanMin + ' min'], label === 'LoopLess' ? 'is-optimal' : '');
+}
+function renderGreedyExact() {
+  if (!state.analysis) return;
+  const result = compareGreedyExact(state.tour);
+  ui.greedyExact.textContent = 'Exact vs greedy nearest-neighbor: ' + result.travelSavedMin + ' min travel, ' + result.latePenaltiesSaved + ' late penalties, ' + result.spanSavedMin + ' min span saved.';
+  const diagnosis = diagnoseInfeasibleWindows(state.tour);
+  ui.infeasible.textContent = diagnosis.length ? 'Infeasible windows: ' + diagnosis.map((item) => item.stopId + ' (' + item.reason + ')').join(', ') : 'No infeasible time windows detected.';
 }
 function updateReplay() {
   if (!state.analysis || !state.projection) return;
@@ -567,6 +574,7 @@ function wireEvents() {
   ui.printCard.addEventListener('click', () => window.print());
   ui.closeCard.addEventListener('click', () => ui.printDialog.close());
   ui.bench.addEventListener('click', runBenchmark); ui.benchMobile.addEventListener('click', runBenchmark);
+  ui.compareGreedy.addEventListener('click', () => { renderGreedyExact(); announce(ui.greedyExact.textContent); });
   ui.closeBench.addEventListener('click', () => { ui.benchPanel.hidden = true; (window.innerWidth <= 600 ? ui.benchMobile : ui.bench).focus(); });
   window.addEventListener('beforeprint', renderDailyCard);
   window.addEventListener('hashchange', () => {

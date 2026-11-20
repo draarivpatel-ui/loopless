@@ -60,7 +60,7 @@ export function travelMinutes(a, b, modeSpec, metric = DISTANCE_METRICS.manhatta
 
 export function normalizeScenario(raw) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('Scenario object required');
-  const modeId = raw.mode ?? 'bike';
+  const modeId = raw?.mode && typeof raw.mode === 'object' ? raw.mode.id : (raw?.mode ?? 'bike');
   if (!Object.hasOwn(TRANSIT_MODES, modeId)) throw new Error('Unknown transit mode');
   const mode = TRANSIT_MODES[modeId];
   if (raw.metric != null && !Object.hasOwn(DISTANCE_METRICS, raw.metric)) throw new Error('Unknown distance metric');
@@ -73,7 +73,7 @@ export function normalizeScenario(raw) {
     x: boundedNumber(raw.anchor?.x ?? 0, -50, 50, 'Anchor x'),
     y: boundedNumber(raw.anchor?.y ?? 0, -50, 50, 'Anchor y'),
   };
-  const startMin = parseClockToMin(raw.startTime ?? '15:30');
+  const startMin = parseClockToMin(raw.startTime ?? raw.startMin ?? '15:30');
   const returnToAnchor = raw.returnToAnchor !== false;
   const transitJitterMin = boundedNumber(raw.transitJitterMin ?? 0, 0, 120, 'Transit delay', true);
   if (raw.returnToAnchor != null && typeof raw.returnToAnchor !== 'boolean') throw new Error('Return to anchor must be a boolean');
@@ -87,10 +87,10 @@ export function normalizeScenario(raw) {
     if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,47}$/.test(id)) throw new Error('Stop IDs must be short, plain identifiers');
     const wStart = s.windowStart != null && s.windowStart !== ''
       ? parseClockToMin(s.windowStart)
-      : startMin;
+      : (s.windowStartMin != null ? s.windowStartMin : startMin);
     const wEnd = s.windowEnd != null && s.windowEnd !== ''
       ? parseClockToMin(s.windowEnd)
-      : 23 * 60 + 59;
+      : (s.windowEndMin != null ? s.windowEndMin : 23 * 60 + 59);
     if (wEnd < wStart) throw new Error(`Closing time must follow opening time for "${id}"`);
     return {
       id,
@@ -700,3 +700,55 @@ function escapeIcsText(value) {
     .replace(/;/g, '\\;')
     .replace(/,/g, '\\,');
 }
+
+/**
+ * Compare the deterministic nearest-neighbor greedy tour with the exact
+ * Branch-and-Bound tour. Returns both schedules and the minutes and late
+ * penalties saved by the exact search.
+ */
+export function compareGreedyExact(scenarioInput) {
+  const sc = normalizeScenario(scenarioInput);
+  const greedy = baselineNearest(sc);
+  const exactResult = solveOptimal(scenarioInput);
+  const exact = exactResult.optimal;
+  return {
+    scenario: sc,
+    greedy,
+    exact,
+    exactMethod: exactResult.method,
+    travelSavedMin: greedy.totalTravelMin - exact.totalTravelMin,
+    latePenaltiesSaved: greedy.missedDeadlines - exact.missedDeadlines,
+    latenessSavedMin: greedy.totalLatenessMin - exact.totalLatenessMin,
+    spanSavedMin: greedy.totalSpanMin - exact.totalSpanMin,
+  };
+}
+
+export const greedyVsExact = compareGreedyExact;
+export const compareGreedyVsExact = compareGreedyExact;
+export const compareNearestExact = compareGreedyExact;
+
+/**
+ * Detect time windows that cannot possibly hold their stop: a stop whose
+ * service duration does not fit inside its own opening-closing window, or
+ * whose closing time is earlier than the earliest reachable finish from the
+ * anchor. Returns a list of { stopId, reason }.
+ */
+export function diagnoseInfeasibleWindows(scenarioInput) {
+  const sc = normalizeScenario(scenarioInput);
+  const results = [];
+  for (const stop of sc.stops) {
+    if (stop.windowEndMin - stop.windowStartMin < stop.durationMin) {
+      results.push({ stopId: stop.id, reason: 'window shorter than service' });
+      continue;
+    }
+    const minTravel = travelMinutes(sc.anchor, stop, sc.mode, sc.metric);
+    if (sc.startMin + minTravel + stop.durationMin > stop.windowEndMin) {
+      results.push({ stopId: stop.id, reason: 'cannot finish by closing time' });
+    }
+  }
+  return results;
+}
+
+export const infeasibleStops = diagnoseInfeasibleWindows;
+export const infeasibleWindows = diagnoseInfeasibleWindows;
+export const detectInfeasibleWindows = diagnoseInfeasibleWindows;
