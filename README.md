@@ -35,7 +35,7 @@ npm run eval:json
 
 ## Verified results
 
-The deterministic Node suite has **149 passing tests, zero failures**. Tests cover independent brute-force optimality, all fixed benchmark scenarios, editor validation, cycles, undo / redo, hostile hashes, prototype pollution, XSS rejection, persistence failures, transit comparisons, exact delay tipping points, map projection, co-located pins, route replay, RFC 5545 edge cases, DOM contracts, local requests, both contrast palettes, demo contracts, and source hygiene.
+The deterministic Node suite has **157 passing tests, zero failures**. Tests cover independent brute-force optimality, all fixed benchmark scenarios, editor validation, cycles, undo / redo, hostile hashes, prototype pollution, XSS rejection, persistence failures, transit comparisons, exact delay tipping points, map projection, co-located pins, route replay, RFC 5545 edge cases, DOM contracts, local requests, both contrast palettes, demo contracts, and source hygiene.
 
 **Zero objective gap on 45 small tours with N <= 7**, using an independent brute-force oracle that recomputes travel, waiting, service, deadlines, and slack. These include 13 small fixed benchmark cases, all four new studio presets, and 28 reproducible seeded cases. The seeded cases mix modes, metrics, prerequisites, jitter, no-return trips, co-location, and tight windows.
 
