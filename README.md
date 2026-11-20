@@ -36,9 +36,9 @@ npm run eval:json
 
 ## Verified results
 
-The deterministic Node suite has **169 passing tests, zero failures**. Tests cover independent brute-force optimality, all fixed benchmark scenarios, editor validation, cycles, undo / redo, hostile hashes, prototype pollution, XSS rejection, persistence failures, transit comparisons, exact delay tipping points, map projection, co-located pins, route replay, RFC 5545 edge cases, DOM contracts, local requests, both contrast palettes, demo contracts, source hygiene, infeasible windows under jitter and prerequisite chains, one-minute margins, 6-stop budget exhaustion, tampered share links, above-the-fold verdict placement, and honest lateness labels.
+The deterministic Node suite has **218 passing tests, zero failures**. Tests cover independent brute-force optimality, all fixed benchmark scenarios, editor validation, cycles, undo / redo, hostile hashes, prototype pollution, XSS rejection, persistence failures, transit comparisons, exact delay tipping points, map projection, co-located pins, route replay, RFC 5545 edge cases, DOM contracts, local requests, both contrast palettes, demo contracts, source hygiene, infeasible windows under jitter and prerequisite chains, one-minute margins, 6-stop budget exhaustion, tampered share links, above-the-fold verdict placement, and honest lateness labels.
 
-**Zero objective gap on 45 small tours with N <= 7**, using an independent brute-force oracle that recomputes travel, waiting, service, deadlines, and slack. These include 13 small fixed benchmark cases, all four new studio presets, and 28 reproducible seeded cases. The seeded cases mix modes, metrics, prerequisites, jitter, no-return trips, co-location, and tight windows.
+**Zero objective gap on 86 small tours with N <= 7**, using an independent brute-force oracle that recomputes travel, waiting, service, deadlines, and slack. These include 13 small fixed benchmark cases, all four new studio presets, 28 reproducible seeded cases, and 41 Wave 3 cases: 40 seeded days with random dependency edges (chains, fans, forks) plus a fan-in chain. The seeded cases mix modes, metrics, prerequisites, jitter, no-return trips, co-location, zero-width and tight windows.
 
 ### Default after-school example
 

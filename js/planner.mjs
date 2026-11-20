@@ -638,7 +638,7 @@ export function buildIcsCalendar(scenarioInput, evaluation, dateStr = '2026-11-2
     const summary = escapeIcsText(leg.name);
     const desc = escapeIcsText(
       `Arrive ${formatMinToClock(leg.arrivalMin)} (travel ${leg.travelMin} min from ${leg.fromName}, `
-      + `${leg.distanceMi} mi). Slack: ${leg.slackMin} min.`
+      + `${leg.distanceMi} mi). ${formatSlackLabel(leg.slackMin)}.`
     );
     lines.push(
       'BEGIN:VEVENT',
