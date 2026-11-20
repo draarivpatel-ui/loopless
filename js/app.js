@@ -1,4 +1,4 @@
-import { formatMinToClock, buildIcsCalendar, compareSchedules, compareGreedyExact, diagnoseInfeasibleWindows, formatSlackLabel } from './planner.mjs?v=studio-c49dfe94a109';
+import { formatMinToClock, buildIcsCalendar, compareSchedules, diagnoseInfeasibleWindows, formatSlackLabel } from './planner.mjs?v=studio-c49dfe94a109';
 import { STUDIO_PRESETS } from './presets.mjs?v=studio-c49dfe94a109';
 import { validateTour, addStop, editStop, deleteStop, createHistory, createAnalyzer, encodeTourHash, decodeTourHash, readStoredTour, writeStoredTour, MAX_STOPS } from './studio.mjs?v=studio-c49dfe94a109';
 import { createMapProjection, layoutMapPins, routePoints, replayPosition, nextReplayStep } from './map.mjs?v=studio-c49dfe94a109';
@@ -54,7 +54,7 @@ const ui = {
 const state = {
   tour: null, history: null, selectedId: null, analysis: null, projection: null,
   worker: null, requestId: 0, watchdog: null, execution: 'Web Worker',
-  elapsed: 0, playing: false, frame: null, lastTick: 0, busy: false,
+  elapsed: 0, playing: false, frame: null, lastTick: 0, busy: false, jitterTimer: null,
   marker: null, timelineEnd: 0, buddyFound: false, buddyKey: null,
   smallSettings: window.innerWidth <= 600,
 };
@@ -223,7 +223,9 @@ function renderSummary() {
   const saved = fifo.totalTravelMin - schedule.totalTravelMin;
   const spanSaved = fifo.totalSpanMin - schedule.totalSpanMin;
   ui.minutes.textContent = saved;
-  ui.travelVerdict.textContent = fifo.totalTravelMin + ' to ' + schedule.totalTravelMin + ' min travel vs FIFO';
+  ui.travelVerdict.textContent = saved >= 0
+    ? fifo.totalTravelMin + ' to ' + schedule.totalTravelMin + ' min travel vs FIFO'
+    : 'Spends ' + Math.abs(saved) + ' min travel to hold deadlines / ' + fifo.totalTravelMin + ' to ' + schedule.totalTravelMin + ' min';
   ui.deadlines.textContent = fifo.missedDeadlines - schedule.missedDeadlines;
   ui.deadlineDenominator.textContent = '/ ' + state.tour.stops.length;
   ui.deadlineVerdict.textContent = fifo.missedDeadlines + ' missed to ' + schedule.missedDeadlines + ' missed';
@@ -261,7 +263,7 @@ function renderMap() {
     grid.append(svgNode('line', { x1: a.x, y1: a.y, x2: b.x, y2: b.y, class: y === 0 ? 'axis-line' : 'grid-line' }));
     grid.append(svgNode('text', { x: a.x - 14, y: a.y + 4, class: 'grid-label', 'text-anchor': 'end' }, y));
   }
-  grid.append(svgNode('text', { x: width - 15, y: height - 8, class: 'axis-caption', 'text-anchor': 'end' }, 'mile offsets'));
+  grid.append(svgNode('text', { x: 15, y: height - 8, class: 'axis-caption', 'text-anchor': 'start' }, 'mile offsets'));
   ui.map.append(grid);
   const result = state.analysis.solution;
   const before = svgNode('path', { id: 'fifo-path', class: 'fifo-route', d: pathData(routePoints(result.scenario, result.baselines.fifo), projection), 'aria-hidden': 'true' });
@@ -341,7 +343,7 @@ function renderJitter() {
   else if (sweep.firstBreakMin === 0) ui.jitterTip.textContent = 'Already overloaded at +0 min. A deadline is missed.';
   else ui.jitterTip.textContent = 'First deadline breaks at +' + sweep.firstBreakMin + ' min per leg.';
   if (!sweep.exact) ui.jitterTip.textContent = 'Best-found sweep / ' + (sweep.firstBreakMin === null ? 'no observed break through +15 min.' : 'observed break at +' + sweep.firstBreakMin + ' min.');
-  ui.jitterMargin.textContent = 'Current tightest margin / ' + current.minSlackMin + ' min';
+  ui.jitterMargin.textContent = 'Current tightest deadline / ' + formatSlackLabel(current.minSlackMin);
   ui.jitterExactness.textContent = sweep.exact ? 'Exact / 16 delay points' : 'Bounded / 16 delay points';
   ui.jitterChart.setAttribute('aria-label', ui.jitterTip.textContent + ' Minimum closing-time margin versus delay.');
   const small = window.innerWidth <= 600, width = small ? 420 : 680, height = 190;
@@ -359,15 +361,15 @@ function renderJitter() {
   if (sweep.firstBreakMin !== null) ui.jitterChart.append(svgNode('line', { x1: x(sweep.firstBreakMin), x2: x(sweep.firstBreakMin), y1: top, y2: bottom, class: 'chart-tip-line' }));
   for (const point of points) {
     const dot = svgNode('circle', { cx: x(point.delayMin), cy: y(point.minSlackMin), r: point.delayMin === delay ? 5 : 3.3, class: 'chart-point' + (point.missedDeadlines ? ' is-broken' : '') + (point.delayMin === delay ? ' is-current' : ''), 'data-delay': point.delayMin });
-    dot.append(svgNode('title', {}, '+' + point.delayMin + ' min delay / ' + point.missedDeadlines + ' missed / ' + point.minSlackMin + ' min margin'));
+    dot.append(svgNode('title', {}, '+' + point.delayMin + ' min delay / ' + point.missedDeadlines + ' missed / ' + formatSlackLabel(point.minSlackMin)));
     ui.jitterChart.append(dot);
   }
   for (const value of [0, 5, 10, 15]) ui.jitterChart.append(svgNode('text', { x: x(value), y: 174, class: 'chart-label', 'text-anchor': 'middle' }, '+' + value));
   const table = node('table', 'data-table');
   const head = node('thead'), row = node('tr');
-  for (const text of ['Delay / leg', 'On time', 'Min margin', 'Search']) { const cell = node('th', null, text); cell.scope = 'col'; row.append(cell); }
+  for (const text of ['Delay / leg', 'On time', 'Window margin', 'Search']) { const cell = node('th', null, text); cell.scope = 'col'; row.append(cell); }
   head.append(row); const body = node('tbody');
-  for (const point of points) appendCells(body, ['+' + point.delayMin + ' min', state.tour.stops.length - point.missedDeadlines + '/' + state.tour.stops.length, point.minSlackMin + ' min', point.method === 'exact-bnb' || point.method === 'exact' ? 'Exact' : 'Bounded']);
+  for (const point of points) appendCells(body, ['+' + point.delayMin + ' min', state.tour.stops.length - point.missedDeadlines + '/' + state.tour.stops.length, formatSlackLabel(point.minSlackMin), point.method === 'exact-bnb' || point.method === 'exact' ? 'Exact' : 'Bounded']);
   table.append(head, body); ui.jitterTable.replaceChildren(table);
 }
 function appendCells(parent, values, className = '') {
@@ -382,11 +384,14 @@ function renderComparison() {
 }
 function renderGreedyExact() {
   if (!state.analysis) return;
-  const result = compareGreedyExact(state.tour);
+  const greedy = state.analysis.solution.baselines.nearest, exact = state.analysis.solution.optimal;
+  const travelSavedMin = greedy.totalTravelMin - exact.totalTravelMin;
+  const latePenaltiesSaved = greedy.missedDeadlines - exact.missedDeadlines;
+  const spanSavedMin = greedy.totalSpanMin - exact.totalSpanMin;
   const savings = [];
-  if (result.travelSavedMin > 0) savings.push(result.travelSavedMin + ' fewer travel min');
-  if (result.latePenaltiesSaved > 0) savings.push(result.latePenaltiesSaved + ' fewer late errands');
-  if (result.spanSavedMin > 0) savings.push(result.spanSavedMin + ' min shorter day');
+  if (travelSavedMin > 0) savings.push(travelSavedMin + ' fewer travel min');
+  if (latePenaltiesSaved > 0) savings.push(latePenaltiesSaved + ' fewer late errands');
+  if (spanSavedMin > 0) savings.push(spanSavedMin + ' min shorter day');
   ui.greedyExact.textContent = savings.length ? 'Exact beats greedy by ' + savings.join(', ') + '.' : 'Exact ties greedy on this day.';
   const diagnosis = diagnoseInfeasibleWindows(state.tour);
   ui.infeasible.hidden = diagnosis.length === 0;
@@ -457,7 +462,8 @@ function renderDailyCard() {
   for (const row of body.rows) row.cells[0].title = row.cells[0].textContent;
   table.append(head, body);
   const footer = node('footer', null, 'Illustrative synthetic mile grid. No live GPS, traffic, addresses, or transit timetables. Complete errands by closing. Every errand is kept. ' + methodLabel(result.method) + '. Calendar times are local floating times. Allow extra real-world buffer.');
-  ui.dailyCard.replaceChildren(node('h2', null, 'LoopLess'), node('h3', null, state.tour.title), node('p', null, 'Day ' + ui.date.value + ' / Leave ' + state.tour.startTime + ' / ' + state.tour.mode + ' / Finish ' + clockLabel(schedule.endMin)), node('p', null, schedule.totalTravelMin + ' min travel / ' + schedule.totalSpanMin + ' min day / ' + schedule.missedDeadlines + ' missed deadlines / +' + state.tour.transitJitterMin + ' min delay per moving leg'), table, node('p', null, ui.returnSummary.textContent), footer);
+  const modeLabel = (state.analysis.modes.find((mode) => mode.id === state.tour.mode) || {}).label || state.tour.mode;
+  ui.dailyCard.replaceChildren(node('h2', null, 'LoopLess'), node('h3', null, state.tour.title), node('p', null, 'Day ' + ui.date.value + ' / Leave ' + state.tour.startTime + ' / ' + modeLabel + ' / Finish ' + clockLabel(schedule.endMin)), node('p', null, schedule.totalTravelMin + ' min travel / ' + schedule.totalSpanMin + ' min day / ' + schedule.missedDeadlines + ' missed deadlines / +' + state.tour.transitJitterMin + ' min delay per moving leg'), table, node('p', null, ui.returnSummary.textContent), footer);
 }
 function download(content, filename, type) {
   const url = URL.createObjectURL(new Blob([content], { type }));
@@ -550,7 +556,11 @@ function wireEvents() {
   ui.restart.addEventListener('click', () => { pauseReplay(); state.elapsed = 0; updateReplay(); });
   ui.replaySlider.addEventListener('input', () => { pauseReplay(); state.elapsed = Number(ui.replaySlider.value); updateReplay(); });
   ui.modes.addEventListener('click', (event) => { const button = event.target.closest('button[data-mode]'); if (button) commit({ ...state.tour, mode: button.dataset.mode }, state.selectedId, false); });
-  ui.jitterSlider.addEventListener('input', () => commit({ ...state.tour, transitJitterMin: Number(ui.jitterSlider.value) }, state.selectedId, false));
+  ui.jitterSlider.addEventListener('input', () => {
+    ui.jitterValue.textContent = '+' + ui.jitterSlider.value + ' min';
+    clearTimeout(state.jitterTimer);
+    state.jitterTimer = setTimeout(() => commit({ ...state.tour, transitJitterMin: Number(ui.jitterSlider.value) }, state.selectedId, false), 180);
+  });
   ui.jitterChart.addEventListener('click', (event) => { if (event.target.dataset.delay != null) commit({ ...state.tour, transitJitterMin: Number(event.target.dataset.delay) }, state.selectedId, false); });
   ui.capy.addEventListener('click', () => { state.buddyFound = !state.buddyFound; reactCapybara(); announce(ui.capyMessage.textContent); });
   ui.share.addEventListener('click', () => {
