@@ -702,6 +702,15 @@ function escapeIcsText(value) {
 }
 
 /**
+ * Format a deadline result as plain text. A missed deadline is reported as
+ * lateness, never as a negative margin that could be mistaken for slack.
+ */
+export function formatSlackLabel(slackMin) {
+  const value = Number.isFinite(slackMin) ? Math.round(slackMin) : 0;
+  return value < 0 ? Math.abs(value) + ' min late' : value + ' min margin';
+}
+
+/**
  * Compare the deterministic nearest-neighbor greedy tour with the exact
  * Branch-and-Bound tour. Returns both schedules and the minutes and late
  * penalties saved by the exact search.
@@ -728,21 +737,52 @@ export const compareGreedyVsExact = compareGreedyExact;
 export const compareNearestExact = compareGreedyExact;
 
 /**
- * Detect time windows that cannot possibly hold their stop: a stop whose
- * service duration does not fit inside its own opening-closing window, or
- * whose closing time is earlier than the earliest reachable finish from the
- * anchor. Returns a list of { stopId, reason }.
+ * Detect time windows that cannot possibly hold their stop under the active
+ * model: a window shorter than its own service, or a closing time that is
+ * unreachable from the anchor even after allowing for prerequisite chains and
+ * the selected delay. Zero-distance legs never receive added delay.
+ * Returns a list of { stopId, reason }.
  */
 export function diagnoseInfeasibleWindows(scenarioInput) {
   const sc = normalizeScenario(scenarioInput);
+  const byId = new Map(sc.stops.map((stop) => [stop.id, stop]));
+  const legTravel = (from, to) => {
+    const base = travelMinutes(from, to, sc.mode, sc.metric);
+    return distanceMiles(from, to, sc.metric) > 0 ? base + sc.transitJitterMin : 0;
+  };
+
+  // Earliest possible finish for each stop, walking prerequisite chains from
+  // the anchor. A stop's chain may start after its prerequisite finishes, and
+  // waiting for an opening window can only push that finish later.
+  const earliestFinish = new Map();
+  function finishFor(stop, seen) {
+    if (earliestFinish.has(stop.id)) return earliestFinish.get(stop.id);
+    if (seen.has(stop.id)) return Infinity;
+    seen.add(stop.id);
+    const from = stop.dependsOn && byId.has(stop.dependsOn)
+      ? byId.get(stop.dependsOn)
+      : sc.anchor;
+    const base = from === sc.anchor ? sc.startMin : finishFor(from, seen);
+    const arrival = base + legTravel(from, stop);
+    const start = Math.max(arrival, stop.windowStartMin);
+    const finish = start + stop.durationMin;
+    earliestFinish.set(stop.id, finish);
+    return finish;
+  }
+
   const results = [];
   for (const stop of sc.stops) {
     if (stop.windowEndMin - stop.windowStartMin < stop.durationMin) {
       results.push({ stopId: stop.id, reason: 'window shorter than service' });
       continue;
     }
-    const minTravel = travelMinutes(sc.anchor, stop, sc.mode, sc.metric);
-    if (sc.startMin + minTravel + stop.durationMin > stop.windowEndMin) {
+    // The earliest realistic finish is the anchor path for independent stops
+    // and the prerequisite chain for dependent ones. If even that lower bound
+    // misses the closing time, no order can save this stop.
+    const direct = sc.startMin + legTravel(sc.anchor, stop) + stop.durationMin;
+    const chained = finishFor(stop, new Set());
+    const earliest = stop.dependsOn ? chained : Math.min(direct, chained);
+    if (earliest > stop.windowEndMin) {
       results.push({ stopId: stop.id, reason: 'cannot finish by closing time' });
     }
   }

@@ -45,6 +45,11 @@
       <article class="verdict"><span class="metric-label">Deadlines saved</span><div><strong id="deadlines-saved">0</strong><span id="deadline-denominator" class="metric-unit"></span></div><span id="deadline-verdict" class="metric-detail">Protecting your closing times</span></article>
       <article class="verdict finish-verdict"><span id="finish-label" class="metric-label">Back at base</span><div><strong id="finish-time">00:00</strong><span id="feasible-badge" class="status-pill">Solving</span></div><span id="span-verdict" class="metric-detail">Every stop stays in the plan</span></article>
     </section>
+    <div id="greedy-verdict" class="greedy-verdict" aria-label="Greedy versus exact result">
+      <button id="btn-compare-greedy-exact" type="button" class="button primary-button">Compare greedy vs exact</button>
+      <strong id="greedy-exact-result">Exact search versus nearest-neighbor greedy.</strong>
+    </div>
+    <p id="infeasible-diagnosis" class="infeasible-note" role="status">No infeasible time windows detected.</p>
     <div id="solver-error" class="alert-error no-print" role="alert" hidden></div>
     <div id="share-panel" class="share-panel no-print" hidden><label for="share-url">Your day link</label><div><input id="share-url" type="text" readonly><button id="btn-copy-link" type="button" class="button primary-button">Copy link</button><button id="btn-close-share" type="button" class="button quiet">Close</button></div><p>Links contain the errand names and settings. Your day is also saved only in this browser.</p></div>
 
@@ -62,6 +67,7 @@
           <div id="route-replay" class="replay-controls no-print" aria-label="Animated route replay">
             <div class="replay-buttons"><button id="replay-play" type="button" class="button primary-button">Play</button><button id="replay-step" type="button" class="button quiet">Step</button><button id="replay-reset" type="button" class="button icon-button" aria-label="Restart route replay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8a8 8 0 1 1-1 7M5 3v6h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button></div>
             <div class="replay-scrub"><label for="replay-slider" class="sr-only">Replay elapsed minutes</label><input id="replay-slider" type="range" min="0" max="1" step="0.1" value="0"><div><span id="replay-status">Ready at base</span><strong id="replay-clock">15:30</strong></div></div>
+            <span class="replay-sync">One clock: marker and every Gantt playhead move together.</span>
           </div>
         </article>
         <article id="schedule-panel" class="panel timeline-panel">
@@ -85,7 +91,7 @@
         <article class="panel baseline-panel">
           <div class="panel-heading"><h3>Show the working.</h3><span class="small-mono">All stops / all strategies</span></div>
           <table class="data-table comparison-table"><caption class="sr-only">LoopLess compared with three prerequisite-respecting baseline strategies</caption><thead><tr><th scope="col">Strategy</th><th scope="col">On time</th><th scope="col">Travel</th><th scope="col">Wait</th><th scope="col">Day span</th></tr></thead><tbody id="compare-tbody"></tbody></table>
-          <div class="comparison-verdict"><button id="btn-compare-greedy-exact" type="button" class="button quiet">Compare greedy vs exact</button><p id="greedy-exact-result" class="model-note">Exact search versus nearest-neighbor greedy.</p><p id="infeasible-diagnosis" class="model-note">No infeasible time windows detected.</p></div>
+          <p class="model-note comparison-note">The greedy-versus-exact verdict and window diagnosis appear beside the payoff above.</p>
         </article>
       </section>
       <aside class="stops-column no-print" aria-label="Errand editor">

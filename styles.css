@@ -347,6 +347,18 @@ summary { min-height: 44px; padding: 12px 0; font-size: 11px; font-weight: 580; 
   .print-only footer { margin-top: 14pt; font-size: 8pt; line-height: 1.5; } .print-only tr { break-inside: avoid; }
 }
 
-.comparison-verdict { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 24px 18px; border-top: 1px solid var(--line); }
-.comparison-verdict .button { min-height: 36px; padding: 7px 12px; }
-.comparison-verdict .model-note { flex-basis: 100%; margin: 0; padding: 0; }
+.greedy-verdict { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 14px 20px; margin-bottom: 10px; border: 1px solid var(--green); border-radius: 10px; background: var(--green-soft); }
+.greedy-verdict .button { min-height: 40px; padding: 8px 14px; }
+.greedy-verdict strong { font-size: 14px; font-weight: 600; line-height: 1.5; }
+.infeasible-note { margin-bottom: 16px; padding: 11px 16px; border: 1px solid var(--red); border-radius: 8px; background: var(--red-soft); color: var(--red); font-size: 12px; font-weight: 600; }
+.replay-sync { flex-basis: 100%; color: var(--muted); font-size: 10px; line-height: 1.4; }
+.comparison-note { padding-top: 12px; border-top: 1px solid var(--line); }
+.gantt-playhead { width: 3px; }
+.gantt-playhead::before { left: -4px; width: 11px; }
+.timeline-row.is-active .gantt-playhead::after { content: attr(data-clock-label); position: absolute; top: -13px; left: 5px; color: var(--orange); font: 10px ui-monospace, SFMono-Regular, Consolas, monospace; white-space: nowrap; }
+@media (max-width: 600px) {
+  .greedy-verdict { padding: 12px 14px; gap: 10px; }
+  .greedy-verdict .button { width: 100%; }
+  .greedy-verdict strong { font-size: 12px; }
+  .replay-sync { font-size: 9px; }
+}

@@ -1,4 +1,4 @@
-import { formatMinToClock, buildIcsCalendar, compareSchedules, compareGreedyExact, diagnoseInfeasibleWindows } from './planner.mjs?v=studio-c49dfe94a109';
+import { formatMinToClock, buildIcsCalendar, compareSchedules, compareGreedyExact, diagnoseInfeasibleWindows, formatSlackLabel } from './planner.mjs?v=studio-c49dfe94a109';
 import { STUDIO_PRESETS } from './presets.mjs?v=studio-c49dfe94a109';
 import { validateTour, addStop, editStop, deleteStop, createHistory, createAnalyzer, encodeTourHash, decodeTourHash, readStoredTour, writeStoredTour, MAX_STOPS } from './studio.mjs?v=studio-c49dfe94a109';
 import { createMapProjection, layoutMapPins, routePoints, replayPosition, nextReplayStep } from './map.mjs?v=studio-c49dfe94a109';
@@ -300,7 +300,7 @@ function renderTimeline() {
   for (const leg of schedule.legTimeline) {
     const row = node('div', 'timeline-row'); row.dataset.stopId = leg.stopId;
     const button = node('button', 'timeline-stop'); button.type = 'button'; button.dataset.stopId = leg.stopId;
-    button.append(node('strong', null, leg.name), node('span', null, clockLabel(leg.serviceStartMin) + ' / ' + (leg.onTime ? leg.slackMin + ' min margin' : leg.latenessMin + ' min late')));
+    button.append(node('strong', null, leg.name), node('span', null, clockLabel(leg.serviceStartMin) + ' / ' + formatSlackLabel(leg.slackMin)));
     const track = node('div', 'gantt-track');
     function block(className, begin, end) {
       if (end <= begin) return;
@@ -383,9 +383,14 @@ function renderComparison() {
 function renderGreedyExact() {
   if (!state.analysis) return;
   const result = compareGreedyExact(state.tour);
-  ui.greedyExact.textContent = 'Exact vs greedy nearest-neighbor: ' + result.travelSavedMin + ' min travel, ' + result.latePenaltiesSaved + ' late penalties, ' + result.spanSavedMin + ' min span saved.';
+  const savings = [];
+  if (result.travelSavedMin > 0) savings.push(result.travelSavedMin + ' fewer travel min');
+  if (result.latePenaltiesSaved > 0) savings.push(result.latePenaltiesSaved + ' fewer late errands');
+  if (result.spanSavedMin > 0) savings.push(result.spanSavedMin + ' min shorter day');
+  ui.greedyExact.textContent = savings.length ? 'Exact beats greedy by ' + savings.join(', ') + '.' : 'Exact ties greedy on this day.';
   const diagnosis = diagnoseInfeasibleWindows(state.tour);
-  ui.infeasible.textContent = diagnosis.length ? 'Infeasible windows: ' + diagnosis.map((item) => item.stopId + ' (' + item.reason + ')').join(', ') : 'No infeasible time windows detected.';
+  ui.infeasible.hidden = diagnosis.length === 0;
+  ui.infeasible.textContent = diagnosis.length ? 'Infeasible windows: ' + diagnosis.map((item) => item.stopId + ' (' + item.reason + ')').join(', ') : '';
 }
 function updateReplay() {
   if (!state.analysis || !state.projection) return;
@@ -399,7 +404,7 @@ function updateReplay() {
   const stop = state.tour.stops.find((item) => item.id === position.stopId);
   ui.replayStatus.textContent = state.elapsed === 0 ? 'Ready at ' + state.tour.anchor.name : position.phase === 'complete' ? 'Day complete' : position.phase === 'return' ? 'Returning to base' : (position.phase === 'travel' ? 'Heading to ' : position.phase === 'wait' ? 'Waiting at ' : 'Doing ') + (stop?.name ?? '');
   const span = Math.max(1, state.timelineEnd - schedule.startMin);
-  for (const head of ui.timeline.querySelectorAll('.gantt-playhead')) { head.style.left = Math.max(0, Math.min(99.5, (position.clockMin - schedule.startMin) / span * 100)) + '%'; head.dataset.clock = position.clockMin; }
+  for (const head of ui.timeline.querySelectorAll('.gantt-playhead')) { head.style.left = Math.max(0, Math.min(99.5, (position.clockMin - schedule.startMin) / span * 100)) + '%'; head.dataset.clock = position.clockMin; head.dataset.clockLabel = clockLabel(position.clockMin); }
   for (const row of ui.timeline.querySelectorAll('.timeline-row')) row.classList.toggle('is-active', row.dataset.stopId === position.stopId);
 }
 function pauseReplay() {
@@ -448,7 +453,7 @@ function renderDailyCard() {
   const table = node('table', 'data-table'), head = node('thead'), headings = node('tr');
   for (const text of ['# / Errand', 'Work begins', 'Finish', 'Close', 'Margin']) { const cell = node('th', null, text); cell.scope = 'col'; headings.append(cell); }
   head.append(headings); const body = node('tbody');
-  for (const [index, leg] of schedule.legTimeline.entries()) appendCells(body, [index + 1 + '. ' + leg.name, clockLabel(leg.serviceStartMin), clockLabel(leg.finishMin), clockLabel(leg.windowEndMin), leg.slackMin + ' min']);
+  for (const [index, leg] of schedule.legTimeline.entries()) appendCells(body, [index + 1 + '. ' + leg.name, clockLabel(leg.serviceStartMin), clockLabel(leg.finishMin), clockLabel(leg.windowEndMin), formatSlackLabel(leg.slackMin)]);
   for (const row of body.rows) row.cells[0].title = row.cells[0].textContent;
   table.append(head, body);
   const footer = node('footer', null, 'Illustrative synthetic mile grid. No live GPS, traffic, addresses, or transit timetables. Complete errands by closing. Every errand is kept. ' + methodLabel(result.method) + '. Calendar times are local floating times. Allow extra real-world buffer.');
@@ -597,7 +602,6 @@ function wireEvents() {
 }
 function init() {
   ui.daySettings.open = !state.smallSettings;
-  ui.map.parentElement.before(document.getElementById('route-replay'));
   const group = node('optgroup'); group.label = 'Houston / Sugar Land - illustrative synthetic days';
   for (const preset of STUDIO_PRESETS) group.append(option(preset.id, preset.title));
   ui.preset.append(group);
