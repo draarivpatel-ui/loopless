@@ -16,6 +16,7 @@ Built as a Technical Track productivity prototype for a hackathon. The original 
 - A live four-mode comparison and an independently re-optimized 16-point delay curve from +0 through +15 minutes per moving leg.
 - Strictly validated share hashes, browser persistence, RFC 5545 calendar export, JSON export, and a one-page daily card with a modal preview.
 - A local Web Worker with a labeled main-thread fallback, stale-response protection, and no dependencies or external requests.
+- A Branch-and-Bound lab that compares all four strategies across all four transit modes, sweeps a 16-point delay tipping-point matrix, stamps one SHA-256 schedule proof across JSON, CSV, and Markdown exports, restores its state from a #llab= bookmark, and runs 22 in-page self-tests.
 - A secret inline SVG capybara with a tangerine and tiny backpack. Click the buddy or open #capybara-buddy. It reacts to a better tour or zero missed deadlines, and respects reduced motion.
 
 ## Run locally
@@ -36,7 +37,7 @@ npm run eval:json
 
 ## Verified results
 
-The deterministic Node suite has **218 passing tests, zero failures**. Tests cover independent brute-force optimality, all fixed benchmark scenarios, editor validation, cycles, undo / redo, hostile hashes, prototype pollution, XSS rejection, persistence failures, transit comparisons, exact delay tipping points, map projection, co-located pins, route replay, RFC 5545 edge cases, DOM contracts, local requests, both contrast palettes, demo contracts, source hygiene, infeasible windows under jitter and prerequisite chains, one-minute margins, 6-stop budget exhaustion, tampered share links, above-the-fold verdict placement, and honest lateness labels.
+The deterministic Node suite has **446 passing tests, zero failures**. Tests cover independent brute-force optimality, all fixed benchmark scenarios, editor validation, cycles, undo / redo, hostile hashes, prototype pollution, XSS rejection, persistence failures, transit comparisons, exact delay tipping points, map projection, co-located pins, route replay, RFC 5545 edge cases, DOM contracts, local requests, both contrast palettes, demo contracts, source hygiene, infeasible windows under jitter and prerequisite chains, one-minute margins, 6-stop budget exhaustion, tampered share links, above-the-fold verdict placement, and honest lateness labels. Lab tests additionally cover SHA-256 known-answer vectors, canonical-JSON rejection of hostile values, proof digest parity across on-page, JSON, CSV, and Markdown surfaces, formula-safe CSV cells, lexicographic dominance over constructive baselines, lab hash round-trips and malformed-hash rejection, comparator and delay-matrix shape, node telemetry, and the in-page self-test battery itself.
 
 **Zero objective gap on 86 small tours with N <= 7**, using an independent brute-force oracle that recomputes travel, waiting, service, deadlines, and slack. These include 13 small fixed benchmark cases, all four new studio presets, 28 reproducible seeded cases, and 41 Wave 3 cases: 40 seeded days with random dependency edges (chains, fans, forks) plus a fan-in chain. The seeded cases mix modes, metrics, prerequisites, jitter, no-return trips, co-location, zero-width and tight windows.
 
@@ -143,6 +144,8 @@ The narration and closing hold span 166 seconds (about 2 minutes 46 seconds). Re
 | js/scenarios.mjs | Original fixed benchmark corpus |
 | js/benchmark.mjs | Reproducible browser and CLI evaluation |
 | js/app.js | Safe DOM rendering and studio interactions |
+| js/bnb-lab.js | Pure lab logic: strategy/mode comparator, 16-point delay matrix, canonical JSON, SHA-256 proof stamping, exports, hash codec, and self-tests |
+| js/lab-app.js | Lab DOM wiring: comparator table, SVG charts, export bar, self-test runner, worker or main-thread fallback |
 | tests/ | Deterministic algorithm, model, security, export, accessibility, and demo checks |
 
 MIT licensed.

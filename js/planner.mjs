@@ -358,7 +358,7 @@ export function solveOptimal(scenarioInput, options = {}) {
   const n = sc.stops.length;
   if (n === 0) {
     const empty = evaluateOrder(sc, []);
-    return { scenario: sc, method: 'exact', optimal: empty, baselines: { fifo: empty, edf: empty, nearest: empty } };
+    return { scenario: sc, method: 'exact', optimal: empty, baselines: { fifo: empty, edf: empty, nearest: empty }, nodesExplored: 0 };
   }
 
   const fifo = baselineFifo(sc);
@@ -372,6 +372,7 @@ export function solveOptimal(scenarioInput, options = {}) {
       method: bnb.exact ? 'exact-bnb' : 'bounded-bnb',
       optimal: bnb.evalResult,
       baselines: { fifo, edf, nearest },
+      nodesExplored: bnb.nodesExplored,
     };
   }
 
@@ -382,6 +383,7 @@ export function solveOptimal(scenarioInput, options = {}) {
     method: 'heuristic-2opt',
     optimal: best,
     baselines: { fifo, edf, nearest },
+    nodesExplored: null,
   };
 }
 
@@ -564,9 +566,9 @@ function branchAndBoundSolve(sc, seeds, nodeBudget) {
   dfs(0, n, sc.startMin, 0, 0, 0, remainingService, Infinity);
   const solved = evaluateOrder(sc, bestOrderIdx.map((idx) => stops[idx].id));
   if (budgetExhausted) {
-    return { evalResult: polishTwoOpt(sc, solved), exact: false };
+    return { evalResult: polishTwoOpt(sc, solved), exact: false, nodesExplored: nodesVisited };
   }
-  return { evalResult: solved, exact: true };
+  return { evalResult: solved, exact: true, nodesExplored: nodesVisited };
 }
 
 function polishTwoOpt(sc, initialEval) {

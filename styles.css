@@ -362,3 +362,65 @@ summary { min-height: 44px; padding: 12px 0; font-size: 11px; font-weight: 580; 
   .greedy-verdict strong { font-size: 12px; }
   .replay-sync { font-size: 9px; }
 }
+
+.lab-panel { margin-top: 22px; padding-bottom: 6px; }
+.lab-controls { display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap; padding: 0 24px 16px; }
+.lab-controls .setting { flex: 0 1 200px; }
+.lab-strategy-group { display: flex; flex-direction: column; gap: 4px; }
+.lab-group-label { font-size: 12px; font-weight: 580; color: var(--muted); }
+.lab-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.lab-chip { min-height: 42px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font-size: 12px; font-weight: 600; }
+.lab-chip.is-active { border-color: var(--green); background: var(--green-soft); box-shadow: inset 0 0 0 1px var(--green); }
+.lab-busy { align-self: center; color: var(--muted); font: 11px ui-monospace, SFMono-Regular, Consolas, monospace; }
+.lab-table-wrap { overflow-x: auto; }
+.lab-table { min-width: 860px; }
+.lab-table tbody tr { cursor: pointer; }
+.lab-table tbody tr:hover { background: var(--bg); }
+.lab-table tbody tr.is-focus { outline: 2px solid var(--green); outline-offset: -2px; }
+.lab-table tbody tr.is-focus td:first-child { box-shadow: inset 3px 0 0 var(--green); }
+.lab-charts { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; padding: 16px 24px 8px; }
+.lab-figure { margin: 0; min-width: 0; }
+.lab-figure figcaption { color: var(--muted); font-size: 11px; font-weight: 580; padding-bottom: 6px; }
+.lab-figure svg { display: block; width: 100%; height: auto; }
+.lab-detail { color: var(--muted); font-size: 11px; padding-top: 6px; min-height: 30px; }
+.lab-tip-point { cursor: pointer; }
+.lab-tip-hit { fill: transparent; }
+.lab-tip-point:focus { outline: none; }
+.lab-tip-point:focus-visible { outline: none; }
+.lab-tip-point:focus-visible .lab-tip-hit { fill: none; stroke: var(--green); stroke-width: 2; }
+.lab-tip-label { fill: var(--red); font: 10px ui-monospace, SFMono-Regular, Consolas, monospace; }
+.lab-missed-bar { fill: var(--red); opacity: .3; }
+.lab-mode-group { cursor: pointer; }
+.lab-mode-hit { fill: transparent; }
+.lab-mode-group:focus { outline: none; }
+.lab-mode-group:focus-visible { outline: none; }
+.lab-mode-group:focus-visible .lab-mode-frame { stroke: var(--green); }
+.lab-bar-travel { fill: var(--green); }
+.lab-bar-span { fill: var(--orange); }
+.lab-mode-frame { fill: none; stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.lab-proof { margin: 8px 24px 16px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.lab-digest-row { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+#lab-digest { font: 11px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; color: var(--ink); overflow-wrap: anywhere; }
+.lab-export-bar { display: flex; flex-wrap: wrap; gap: 8px; }
+.lab-export-bar .button { min-height: 40px; padding: 8px 13px; }
+.lab-status { display: block; margin-top: 10px; color: var(--muted); font-size: 11px; }
+.lab-status.is-error { color: var(--red); }
+.lab-selftest { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 0 24px 16px; }
+.lab-selftest .lab-status { margin-top: 0; }
+.lab-test-list { flex-basis: 100%; margin: 4px 0 0; padding-left: 22px; font-size: 11px; color: var(--muted); max-height: 220px; overflow-y: auto; }
+.lab-test-list li { padding: 3px 0; }
+.lab-test-list li.is-pass::marker { color: var(--green); }
+.lab-test-list li.is-fail { color: var(--red); }
+@media (max-width: 980px) {
+  .lab-charts { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .lab-panel { margin-top: 16px; }
+  .lab-controls { padding-inline: 16px; gap: 12px; }
+  .lab-controls .setting { flex-basis: 100%; }
+  .lab-table-wrap { margin-inline: 0; }
+  .lab-charts { padding-inline: 16px; }
+  .lab-proof { margin-inline: 16px; padding: 14px; }
+  .lab-export-bar .button { flex: 1 1 44%; }
+  .lab-selftest { padding-inline: 16px; }
+}

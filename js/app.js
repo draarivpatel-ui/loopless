@@ -114,6 +114,7 @@ function persist() {
   ui.save.textContent = writeStoredTour(storage, state.tour) ? 'Saved on this browser.' : 'Storage unavailable. You can still share or export your day.';
   if (location.hash.startsWith('#tour=')) history.replaceState(null, '', encodeTourHash(state.tour));
   if (!ui.sharePanel.hidden) ui.shareUrl.value = location.href.split('#')[0] + encodeTourHash(state.tour);
+  document.dispatchEvent(new CustomEvent('loopless:tour', { detail: state.tour }));
 }
 function commit(raw, selectedId = state.selectedId, refreshInspector = true) {
   try {
