@@ -361,7 +361,7 @@ function renderJitter() {
   ui.jitterChart.append(svgNode('path', { d: points.map((point, index) => (index ? 'L' : 'M') + x(point.delayMin) + ' ' + y(point.minSlackMin)).join(' '), class: 'chart-curve' }));
   if (sweep.firstBreakMin !== null) ui.jitterChart.append(svgNode('line', { x1: x(sweep.firstBreakMin), x2: x(sweep.firstBreakMin), y1: top, y2: bottom, class: 'chart-tip-line' }));
   for (const point of points) {
-    const dot = svgNode('circle', { cx: x(point.delayMin), cy: y(point.minSlackMin), r: point.delayMin === delay ? 5 : 3.3, class: 'chart-point' + (point.missedDeadlines ? ' is-broken' : '') + (point.delayMin === delay ? ' is-current' : ''), 'data-delay': point.delayMin });
+    const dot = svgNode('circle', { cx: x(point.delayMin), cy: y(point.minSlackMin), r: point.delayMin === delay ? 5 : 3.3, class: 'chart-point' + (point.missedDeadlines ? ' is-broken' : '') + (point.delayMin === delay ? ' is-current' : ''), 'data-delay': point.delayMin, tabindex: 0, role: 'button', 'aria-pressed': String(point.delayMin === delay), 'aria-label': 'Set delay to +' + point.delayMin + ' min, ' + point.missedDeadlines + ' missed, ' + formatSlackLabel(point.minSlackMin) });
     dot.append(svgNode('title', {}, '+' + point.delayMin + ' min delay / ' + point.missedDeadlines + ' missed / ' + formatSlackLabel(point.minSlackMin)));
     ui.jitterChart.append(dot);
   }
@@ -563,6 +563,20 @@ function wireEvents() {
     state.jitterTimer = setTimeout(() => commit({ ...state.tour, transitJitterMin: Number(ui.jitterSlider.value) }, state.selectedId, false), 180);
   });
   ui.jitterChart.addEventListener('click', (event) => { if (event.target.dataset.delay != null) commit({ ...state.tour, transitJitterMin: Number(event.target.dataset.delay) }, state.selectedId, false); });
+  ui.jitterChart.addEventListener('keydown', (event) => {
+    const point = event.target.closest('.chart-point');
+    if (!point) return;
+    const current = Number(point.dataset.delay);
+    if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+      event.preventDefault();
+      const next = Math.min(15, Math.max(0, current + (event.key === 'ArrowRight' ? 1 : -1)));
+      ui.jitterChart.querySelector('.chart-point[data-delay="' + next + '"]')?.focus();
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      commit({ ...state.tour, transitJitterMin: current }, state.selectedId, false);
+    }
+  });
   ui.capy.addEventListener('click', () => { state.buddyFound = !state.buddyFound; reactCapybara(); announce(ui.capyMessage.textContent); });
   ui.share.addEventListener('click', () => {
     try { const hash = encodeTourHash(state.tour); clearError(); history.replaceState(null, '', hash); ui.shareUrl.value = location.href; ui.sharePanel.hidden = false; ui.shareUrl.focus({ preventScroll: true }); ui.shareUrl.select(); announce('Shareable day link created.'); } catch (error) { errorMessage(error); }
@@ -589,6 +603,7 @@ function wireEvents() {
   });
   ui.printCard.addEventListener('click', () => window.print());
   ui.closeCard.addEventListener('click', () => ui.printDialog.close());
+  ui.printDialog.addEventListener('close', () => ui.print.focus());
   ui.bench.addEventListener('click', runBenchmark); ui.benchMobile.addEventListener('click', runBenchmark);
   ui.compareGreedy.addEventListener('click', () => { renderGreedyExact(); announce(ui.greedyExact.textContent); });
   ui.closeBench.addEventListener('click', () => { ui.benchPanel.hidden = true; (window.innerWidth <= 600 ? ui.benchMobile : ui.bench).focus(); });

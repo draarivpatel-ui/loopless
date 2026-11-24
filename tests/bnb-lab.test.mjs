@@ -133,9 +133,9 @@ test('csvCell renders null and undefined as empty cells', () => {
 test('csvRow joins escaped cells with commas', () => {
   assert.equal(csvRow(['a', 'b,c', '=d']), 'a,"b,c",\'=d');
 });
-test('csvCell does not treat leading spaces or plain text as formulas', () => {
-  assert.equal(csvCell(' =x'), '" =x"'.replace(/"/g, '') === ' =x' ? ' =x' : csvCell(' =x'));
-  assert.equal(csvCell(' =x'), ' =x');
+test('csvCell hardens whitespace-prefixed formulas while leaving plain text unchanged', () => {
+  assert.equal(csvCell(' =x'), "' =x");
+  assert.equal(csvCell('plain text'), 'plain text');
 });
 
 // ---- strategy registry and runLabStrategy ----

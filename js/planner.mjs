@@ -19,6 +19,15 @@ export const DISTANCE_METRICS = Object.freeze({
 
 export const BNB_NODE_BUDGET = 1_500_000;
 
+const NORMALIZED_SCENARIOS = new WeakSet();
+
+function freezeScenarioGraph(value, seen = new Set()) {
+  if (!value || typeof value !== 'object' || seen.has(value)) return value;
+  seen.add(value);
+  for (const key of Object.keys(value)) freezeScenarioGraph(value[key], seen);
+  return Object.freeze(value);
+}
+
 export function parseClockToMin(hhmm) {
   if (typeof hhmm === 'number') {
     if (!Number.isInteger(hhmm) || hhmm < 0 || hhmm > 1439) throw new Error('Clock minutes must be an integer from 0 to 1439');
@@ -87,10 +96,10 @@ export function normalizeScenario(raw) {
     if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,47}$/.test(id)) throw new Error('Stop IDs must be short, plain identifiers');
     const wStart = s.windowStart != null && s.windowStart !== ''
       ? parseClockToMin(s.windowStart)
-      : (s.windowStartMin != null ? s.windowStartMin : startMin);
+      : (s.windowStartMin != null ? parseClockToMin(s.windowStartMin) : startMin);
     const wEnd = s.windowEnd != null && s.windowEnd !== ''
       ? parseClockToMin(s.windowEnd)
-      : (s.windowEndMin != null ? s.windowEndMin : 23 * 60 + 59);
+      : (s.windowEndMin != null ? parseClockToMin(s.windowEndMin) : 23 * 60 + 59);
     if (wEnd < wStart) throw new Error(`Closing time must follow opening time for "${id}"`);
     return {
       id,
@@ -115,7 +124,7 @@ export function normalizeScenario(raw) {
   }
   validateNoCycle(stops);
 
-  return {
+  const normalized = {
     id: String(raw.id || 'custom'),
     title: String(raw.title || 'Custom Day Plan'),
     mode,
@@ -126,6 +135,15 @@ export function normalizeScenario(raw) {
     transitJitterMin,
     stops,
   };
+  const frozen = freezeScenarioGraph(normalized);
+  NORMALIZED_SCENARIOS.add(frozen);
+  return frozen;
+}
+
+export function ensureNormalizedScenario(input) {
+  return input && typeof input === 'object' && NORMALIZED_SCENARIOS.has(input)
+    ? input
+    : normalizeScenario(input);
 }
 
 function boundedNumber(value, min, max, label, integer = false) {
@@ -157,10 +175,9 @@ function validateNoCycle(stops) {
  * Evaluate a specific stop order under time windows, prerequisites, and mode parameters.
  */
 export function evaluateOrder(scenarioInput, orderIds) {
-  const sc = scenarioInput.stops && scenarioInput.mode?.mph
-    ? scenarioInput
-    : normalizeScenario(scenarioInput);
+  const sc = ensureNormalizedScenario(scenarioInput);
 
+  if (!Array.isArray(orderIds)) throw new Error('Order must be an array of stop ids');
   const byId = new Map(sc.stops.map((s) => [s.id, s]));
   const ordered = orderIds.map((id) => {
     const found = byId.get(id);
@@ -614,9 +631,7 @@ function isTopologicallyValid(orderIds, byId) {
  * midnight day rollover handling, 75-octet UTF-8 folding, and text escaping.
  */
 export function buildIcsCalendar(scenarioInput, evaluation, dateStr = '2026-11-21') {
-  const sc = scenarioInput.stops && scenarioInput.mode?.mph
-    ? scenarioInput
-    : normalizeScenario(scenarioInput);
+  const sc = ensureNormalizedScenario(scenarioInput);
   const baseCompactDate = formatCompactIcsDate(dateStr, 0);
   const lines = [
     'BEGIN:VCALENDAR',

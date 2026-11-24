@@ -123,7 +123,7 @@ test('ICS calendar reports lateness as minutes late, never a negative slack figu
 
 test('every display surface that shows slack uses formatSlackLabel, never a raw signed number', () => {
   assert.ok(app.includes('formatSlackLabel(current.minSlackMin)'), 'jitter margin line');
-  assert.equal((app.match(/formatSlackLabel\(point\.minSlackMin\)/g) || []).length, 2, 'chart dot title and table column');
+  assert.equal((app.match(/formatSlackLabel\(point\.minSlackMin\)/g) || []).length, 3, 'chart dot accessible name, title, and table column');
   assert.ok(!app.includes("minSlackMin + ' min'"), 'no raw signed margin text');
   assert.ok(app.includes('formatSlackLabel(leg.slackMin)'), 'daily card description uses the label');
   assert.ok(planner.includes('formatSlackLabel(leg.slackMin)'), 'ICS description uses the label');

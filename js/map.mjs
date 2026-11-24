@@ -1,6 +1,6 @@
-import { normalizeScenario } from './planner.mjs?v=studio-c49dfe94a109';
+import { ensureNormalizedScenario } from './planner.mjs?v=studio-c49dfe94a109';
 
-const scenario = (raw) => raw.mode?.mph ? raw : normalizeScenario(raw);
+const scenario = (raw) => ensureNormalizedScenario(raw);
 
 export function createMapProjection(raw, width = 900, height = 430, padding = 52) {
   const tour = scenario(raw);

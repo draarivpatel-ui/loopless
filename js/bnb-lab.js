@@ -13,6 +13,7 @@ import {
   baselineEdf,
   baselineNearest,
   solveOptimal,
+  formatSlackLabel,
 } from './planner.mjs?v=studio-c49dfe94a109';
 import { validateTour } from './studio.mjs?v=studio-c49dfe94a109';
 import { STUDIO_PRESETS } from './presets.mjs?v=studio-c49dfe94a109';
@@ -268,6 +269,13 @@ export function buildProofPayload(report) {
   };
 }
 
+function deepFreeze(value, seen = new Set()) {
+  if (!value || typeof value !== 'object' || seen.has(value)) return value;
+  seen.add(value);
+  for (const key of Object.keys(value)) deepFreeze(value[key], seen);
+  return Object.freeze(value);
+}
+
 /** Single-entry-per-key digest cache so every export surface shares one digest. */
 export function createProofCache(limit = 32) {
   if (!Number.isInteger(limit) || limit < 1 || limit > 256) throw new Error('Proof cache limit must be an integer from 1 to 256');
@@ -278,10 +286,10 @@ export function createProofCache(limit = 32) {
       const cached = map.get(stateKey);
       if (cached) return { stamped: cached, stateKey, cached: true };
       const digest = sha256Hex(stateKey);
-      const stamped = {
-        proof,
+      const stamped = deepFreeze({
+        proof: structuredClone(proof),
         integrity: { algorithm: 'SHA-256', canonical: 'sorted-key-json-v1', digest },
-      };
+      });
       if (map.size >= limit) map.delete(map.keys().next().value);
       map.set(stateKey, stamped);
       return { stamped, stateKey, cached: false };
@@ -311,7 +319,10 @@ export function verifyStamped(stamped) {
   if (!stamped || typeof stamped !== 'object' || Array.isArray(stamped)) throw new Error('A stamped proof object is required');
   if (!stamped.proof || !stamped.integrity || typeof stamped.integrity.digest !== 'string') throw new Error('Malformed stamped proof');
   const recomputed = sha256Hex(canonicalJson(stamped.proof));
-  return { ok: recomputed === stamped.integrity.digest, digest: stamped.integrity.digest, recomputed };
+  const schemeOk = stamped.integrity.algorithm === 'SHA-256'
+    && stamped.integrity.canonical === 'sorted-key-json-v1'
+    && /^[0-9a-f]{64}$/.test(stamped.integrity.digest);
+  return { ok: schemeOk && recomputed === stamped.integrity.digest, digest: stamped.integrity.digest, recomputed };
 }
 
 /** Returns a copy with one numeric field perturbed; its digest check must fail. */
@@ -323,7 +334,7 @@ export function buildTamperedStamped(stamped) {
   return clone;
 }
 
-const FORMULA_TRIGGER = /^[=+\-@]/;
+const FORMULA_TRIGGER = /^[\t\r\n ]*[=+\-@]/;
 /** Spreadsheet-safe cell: quotes commas/newlines, prefixes formula triggers with a single quote. */
 export function csvCell(value) {
   let text = value == null ? '' : String(value);
@@ -373,13 +384,17 @@ export function exportProofCsv(stamped) {
   return lines.join('\r\n') + '\r\n';
 }
 
+function markdownText(value) {
+  return String(value).replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
+}
+
 export function exportProofMarkdown(stamped) {
   if (!stamped || !stamped.proof || !stamped.integrity) throw new Error('A stamped proof object is required');
   const { proof, integrity } = stamped;
   const lines = [
     '# LoopLess schedule proof',
     '',
-    'Day: ' + proof.day.title + ' (' + proof.day.id + '). Mode under test: ' + proof.lab.modeId + '. Delay under test: +' + proof.lab.delayMin + ' min per moving leg.',
+    'Day: ' + markdownText(proof.day.title) + ' (' + proof.day.id + '). Mode under test: ' + proof.lab.modeId + '. Delay under test: +' + proof.lab.delayMin + ' min per moving leg.',
     '',
     '## Strategy by mode comparator',
     '',
@@ -388,7 +403,7 @@ export function exportProofMarkdown(stamped) {
   ];
   for (const mode of proof.comparator) {
     for (const row of mode.rows) {
-      lines.push('| ' + [mode.modeLabel, row.strategyLabel, row.onTime + '/' + row.stopCount, row.totalTravelMin + ' min', row.totalSpanMin + ' min', row.minBufferSlackMin + ' min', row.travelSavedVsFifoMin + ' min', row.rescuedDeadlines, row.method + (row.nodesExplored == null ? '' : ' / ' + row.nodesExplored + ' nodes')].join(' | ') + ' |');
+      lines.push('| ' + [mode.modeLabel, row.strategyLabel, row.onTime + '/' + row.stopCount, row.totalTravelMin + ' min', row.totalSpanMin + ' min', formatSlackLabel(row.minBufferSlackMin), row.travelSavedVsFifoMin + ' min', row.rescuedDeadlines, row.method + (row.nodesExplored == null ? '' : ' / ' + row.nodesExplored + ' nodes')].join(' | ') + ' |');
     }
   }
   lines.push('', '## Delay tipping matrix (' + proof.delayMatrix.modeId + ')', '');

@@ -165,7 +165,6 @@ async function init() {
     for (const mode of report.comparator.modes) {
       for (const row of mode.rows) {
         const tr = node('tr', (row.strategyId === 'loopless-exact' ? 'is-optimal ' : '') + (mode.modeId === state.mode && row.strategyId === state.strategy ? ' is-focus' : ''));
-        tr.tabIndex = 0;
         tr.dataset.mode = mode.modeId;
         tr.dataset.strategy = row.strategyId;
         const cells = [
@@ -174,7 +173,19 @@ async function init() {
           row.totalSpanMin + ' min', formatSlackLabel(row.minBufferSlackMin), row.travelSavedVsFifoMin + ' min',
           String(row.rescuedDeadlines), methodLabel(row.method) + (row.nodesExplored == null ? '' : ' / ' + row.nodesExplored + ' nodes'),
         ];
-        for (const value of cells) tr.append(node('td', null, value));
+        for (const [cellIndex, value] of cells.entries()) {
+          const td = node('td');
+          if (cellIndex === 0) {
+            const button = node('button', 'lab-row-select', value);
+            button.type = 'button';
+            button.setAttribute('aria-label', 'Use ' + mode.modeLabel + ' with ' + row.strategyLabel);
+            button.setAttribute('aria-pressed', String(mode.modeId === state.mode && row.strategyId === state.strategy));
+            td.append(button);
+          } else {
+            td.textContent = value;
+          }
+          tr.append(td);
+        }
         ui.tbody.append(tr);
       }
     }
@@ -216,7 +227,7 @@ async function init() {
       ui.tipChart.append(svgNode('text', { x: x(strategy.tippingPointMin), y: top - 8, class: 'lab-tip-label', 'text-anchor': 'middle' }, '+' + strategy.tippingPointMin + ' min breaks'));
     }
     for (const point of strategy.points) {
-      const marker = svgNode('g', { class: 'lab-tip-point', tabindex: '0', role: 'button', 'data-delay': point.delayMin, 'aria-label': '+' + point.delayMin + ' min delay, ' + point.missedDeadlines + ' missed, ' + formatSlackLabel(point.minSlackMin) });
+      const marker = svgNode('g', { class: 'lab-tip-point', tabindex: '0', role: 'button', 'data-delay': point.delayMin, 'aria-pressed': String(point.delayMin === state.delay), 'aria-label': '+' + point.delayMin + ' min delay, ' + point.missedDeadlines + ' missed, ' + formatSlackLabel(point.minSlackMin) });
       marker.append(
         svgNode('circle', { cx: x(point.delayMin), cy: ySlack(point.minSlackMin), r: 10, class: 'lab-tip-hit' }),
         svgNode('circle', { cx: x(point.delayMin), cy: ySlack(point.minSlackMin), r: point.delayMin === state.delay ? 5.5 : 3.4, class: 'chart-point' + (point.missedDeadlines ? ' is-broken' : '') + (point.delayMin === state.delay ? ' is-current' : '') }),
@@ -258,7 +269,7 @@ async function init() {
     }
     rows.forEach((entry, index) => {
       const gx = left + index * groupW;
-      const group = svgNode('g', { class: 'lab-mode-group', tabindex: '0', role: 'button', 'data-mode': entry.modeId, 'aria-label': entry.modeLabel + ', ' + entry.row.totalTravelMin + ' min travel, ' + entry.row.totalSpanMin + ' min day span' });
+      const group = svgNode('g', { class: 'lab-mode-group', tabindex: '0', role: 'button', 'data-mode': entry.modeId, 'aria-pressed': String(entry.modeId === state.mode), 'aria-label': entry.modeLabel + ', ' + entry.row.totalTravelMin + ' min travel, ' + entry.row.totalSpanMin + ' min day span' });
       group.append(
         svgNode('rect', { x: gx + 3, y: top - 6, width: groupW - 6, height: bottom - top + 26, class: 'lab-mode-hit' }),
         svgNode('rect', { x: gx + groupW * 0.18, y: y(entry.row.totalTravelMin), width: groupW * 0.26, height: bottom - y(entry.row.totalTravelMin), class: 'lab-bar-travel' }),
@@ -303,14 +314,6 @@ async function init() {
       syncControls();
       syncHash();
       requestReport();
-    });
-    ui.tbody.addEventListener('keydown', (event) => {
-      if (!['Enter', ' '].includes(event.key)) return;
-      const row = event.target.closest('tr[data-mode]');
-      if (row) {
-        event.preventDefault();
-        row.click();
-      }
     });
     ui.tipChart.addEventListener('click', (event) => {
       const marker = event.target.closest('.lab-tip-point');

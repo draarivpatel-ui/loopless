@@ -84,7 +84,7 @@
         <article id="jitter-panel" class="panel jitter-panel no-print">
           <div class="panel-heading"><h3>A buffer for the unexpected.</h3><span id="jitter-exactness" class="method-pill">Exact sweep</span></div>
           <div class="jitter-verdict"><strong id="jitter-tipping">Calculating delay tolerance</strong><span id="jitter-current-margin"></span></div>
-          <svg id="jitter-chart" viewBox="0 0 680 190" role="img" aria-label="Deadline margin across transit delays from zero to fifteen minutes"></svg>
+          <svg id="jitter-chart" viewBox="0 0 680 190" role="group" aria-label="Deadline margin across transit delays from zero to fifteen minutes"></svg>
           <div class="jitter-control"><label for="jitter-slider">Delay on each moving leg <strong id="jitter-value">+0 min</strong></label><input id="jitter-slider" type="range" min="0" max="15" step="1" value="0"></div>
           <p class="model-note">Re-optimizes at every whole-minute delay from +0 to +15. Zero-distance legs get no extra delay. A closing time means the errand must be finished by that minute.</p>
           <details class="sweep-details"><summary>Inspect all 16 delay results</summary><div id="jitter-table"></div></details>
@@ -139,8 +139,8 @@
       </div>
       <div class="lab-table-wrap"><table id="lab-compare-table" class="data-table lab-table"><caption class="sr-only">Four errand strategies evaluated across four transit modes by the same solver</caption><thead><tr><th scope="col">Mode</th><th scope="col">Strategy</th><th scope="col">On time</th><th scope="col">Missed</th><th scope="col">Lateness</th><th scope="col">Travel</th><th scope="col">Day span</th><th scope="col">Min margin</th><th scope="col">Saved vs FIFO</th><th scope="col">Rescued</th><th scope="col">Search</th></tr></thead><tbody id="lab-compare-tbody"></tbody></table></div>
       <div class="lab-charts">
-        <figure class="lab-figure"><figcaption>Delay tipping points / <span id="lab-tip-strategy">LoopLess exact search</span></figcaption><svg id="lab-tip-chart" viewBox="0 0 680 240" role="img" aria-label="Missed deadlines and minimum deadline margin across delays from zero to fifteen minutes"></svg><p id="lab-tip-detail" class="lab-detail">Select a delay marker for exact numbers.</p></figure>
-        <figure class="lab-figure"><figcaption>Travel and day span by mode</figcaption><svg id="lab-mode-chart" viewBox="0 0 420 240" role="img" aria-label="Travel minutes and day span minutes across four transit modes"></svg></figure>
+        <figure class="lab-figure"><figcaption>Delay tipping points / <span id="lab-tip-strategy">LoopLess exact search</span></figcaption><svg id="lab-tip-chart" viewBox="0 0 680 240" role="group" aria-label="Missed deadlines and minimum deadline margin across delays from zero to fifteen minutes"></svg><p id="lab-tip-detail" class="lab-detail">Select a delay marker for exact numbers.</p></figure>
+        <figure class="lab-figure"><figcaption>Travel and day span by mode</figcaption><svg id="lab-mode-chart" viewBox="0 0 420 240" role="group" aria-label="Travel minutes and day span minutes across four transit modes"></svg></figure>
       </div>
       <div class="lab-proof">
         <div class="lab-digest-row"><span class="metric-label">Schedule proof SHA-256</span><code id="lab-digest">computing</code></div>
