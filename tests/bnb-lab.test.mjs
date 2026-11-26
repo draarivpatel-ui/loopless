@@ -586,3 +586,12 @@ test('a one-node budget still reports its explored count and bounded label', () 
   assert.equal(solved.method, 'bounded-bnb');
   assert.ok(Number.isInteger(solved.nodesExplored) && solved.nodesExplored >= 1 && solved.nodesExplored <= BNB_NODE_BUDGET);
 });
+
+
+test('batch4 csv guard covers invisible unicode prefixes and numeric negatives', () => {
+  for (const input of ['\u200b=cmd', '\ufeff=cmd', '\u00a0=cmd', '\u2060@cmd', ' \u200b\t=cmd']) {
+    const out = csvCell(input);
+    assert.ok(out.startsWith("'") || out.startsWith("\"'"), input + ' -> ' + out);
+  }
+  assert.ok(!String(csvCell(-12.5)).includes("'"));
+});

@@ -334,11 +334,12 @@ export function buildTamperedStamped(stamped) {
   return clone;
 }
 
-const FORMULA_TRIGGER = /^[\t\r\n ]*[=+\-@]/;
+const FORMULA_TRIGGER = /^[\s\p{Cf}\p{Cc}]*[=+\-@\t\r]/u;
 /** Spreadsheet-safe cell: quotes commas/newlines, prefixes formula triggers with a single quote. */
 export function csvCell(value) {
+  const numeric = typeof value === 'number' && Number.isFinite(value);
   let text = value == null ? '' : String(value);
-  if (FORMULA_TRIGGER.test(text)) text = "'" + text;
+  if (!numeric && FORMULA_TRIGGER.test(text)) text = "'" + text;
   if (/[",\r\n\t]/.test(text)) text = '"' + text.replace(/"/g, '""') + '"';
   return text;
 }
