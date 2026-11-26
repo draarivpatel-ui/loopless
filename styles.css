@@ -337,7 +337,7 @@ summary { min-height: 44px; padding: 12px 0; font-size: 11px; font-weight: 580; 
   @page { size: letter portrait; margin: .5in; }
   :root, :root[data-theme="dark"] { color-scheme: light; --ink: #203c32; --muted: #53675b; --paper: #fff; --bg: #fff; --line: #d5dbd0; }
   body { background: white; color: #203c32; font-size: 10pt; }
-  .no-print, .verdict-strip, .workspace, .share-panel, .alert-error, .skip-link { display: none !important; }
+  .no-print, .verdict-strip, .workspace, .share-panel, .alert-error, .skip-link, .greedy-verdict button { display: none !important; }
   .studio { padding: 0; max-width: none; }
   .print-only { display: block; } .print-only h2 { font-size: 26pt; margin-bottom: 12pt; } .print-only h3 { font-size: 14pt; margin-bottom: 8pt; }
   .print-only p { margin-bottom: 10pt; } .print-only .data-table { font-size: 9pt; } .print-only .data-table th { font-size: 8pt; }

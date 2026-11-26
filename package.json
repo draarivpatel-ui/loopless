@@ -6,7 +6,7 @@
   "type": "module",
   "main": "js/planner.mjs",
   "scripts": {
-    "test": "node --test tests/*.test.mjs",
+    "test": "node --test tests/*.test.mjs tests/*.test.cjs",
     "eval": "node scripts/run-eval.mjs",
     "eval:check": "node scripts/run-eval.mjs --check",
     "eval:json": "node scripts/run-eval.mjs --json"
