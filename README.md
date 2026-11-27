@@ -2,7 +2,7 @@
 
 LoopLess turns a list of errands into an inspectable route and schedule. It keeps every task, protects completion deadlines, and shows exactly where travel, waiting, and service time go.
 
-Built as a Technical Track productivity prototype for a hackathon. The original project commit, 13749f9, was created on November 17, 2026. This revamp uses the same solver problem and the same fixed benchmark corpus, with a new route studio and separate fictional Houston / Riverside examples.
+Built as a Technical Track productivity prototype for a hackathon. The original project commit, 13749f9, was created on November 17, 2026. This revamp uses the same solver problem and the same fixed benchmark corpus, with a new route studio and separate fictional Riverside / Lakeview examples.
 
 ## Route studio
 
@@ -92,7 +92,7 @@ The default safety budget is **1,500,000 search nodes**. Exhaustion returns a vi
 
 ## Synthetic model and guardrails
 
-All presets are fictional examples inspired by Houston / Riverside errands. They contain no real addresses, personal schedules, school identifiers, GPS coordinates, or field-trial claims.
+All presets are fictional Riverside / Lakeview examples. They contain no real addresses, personal schedules, school identifiers, GPS coordinates, or field-trial claims.
 
 | Mode | Constant speed | Overhead per moving leg |
 | --- | --- | --- |

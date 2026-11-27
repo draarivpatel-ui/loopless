@@ -1,4 +1,4 @@
-/** Houston / Riverside inspired examples. These are fictional errands on a synthetic mile grid. */
+/** Riverside / Lakeview, fictional examples. These are fictional errands on a synthetic mile grid. */
 export const STUDIO_PRESETS = [
   {
     id: 'houston-stem', title: 'After-School STEM & Errand Run', mode: 'bike', metric: 'manhattan',

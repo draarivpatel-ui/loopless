@@ -628,7 +628,7 @@ function wireEvents() {
 }
 function init() {
   ui.daySettings.open = !state.smallSettings;
-  const group = node('optgroup'); group.label = 'Houston / Riverside - illustrative synthetic days';
+  const group = node('optgroup'); group.label = 'Riverside / Lakeview, fictional examples';
   for (const preset of STUDIO_PRESETS) group.append(option(preset.id, preset.title));
   ui.preset.append(group);
   ui.preset.append(option('custom', 'Shared / custom day', true));

@@ -11,7 +11,7 @@ function memoryStorage() {
   return { getItem: (key) => items.get(key) ?? null, setItem: (key, value) => items.set(key, value), items };
 }
 
-test('all four Houston and Riverside illustrative presets validate without mutation', () => {
+test('all four Riverside and Lakeview fictional presets validate without mutation', () => {
   for (const preset of STUDIO_PRESETS) {
     const before = JSON.stringify(preset);
     assert.equal(validateTour(preset).id, preset.id);
