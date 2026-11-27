@@ -478,9 +478,9 @@ test('JSON export of the default day re-verifies after a serialize round-trip', 
 const codecStates = [
   { day: 'current', mode: 'bike', strategy: 'loopless-exact', delay: 0 },
   { day: 'current', mode: 'walk', strategy: 'fifo', delay: 15 },
-  { day: 'houston-stem', mode: 'bus', strategy: 'edf', delay: 7 },
+  { day: 'riverside-stem', mode: 'bus', strategy: 'edf', delay: 7 },
   { day: 'honest-overload', mode: 'car', strategy: 'nearest-neighbor', delay: 3 },
-  { day: 'Riverside-family', mode: 'walk', strategy: 'loopless-exact', delay: 12 },
+  { day: 'lakeview-family', mode: 'walk', strategy: 'loopless-exact', delay: 12 },
 ];
 for (const state of codecStates) {
   test(`lab hash round-trips ${state.day}/${state.mode}/${state.strategy}/+${state.delay}`, () => {
@@ -515,7 +515,7 @@ for (const bad of ['#llab=v1.current.bike.fifo.16', '#llab=v1.current.bike.fifo.
   });
 }
 test('decodeLabHash rejects a day not in the allowlist', () => {
-  assert.throws(() => decodeLabHash('#llab=v1.unknown-day.bike.fifo.0', ['houston-stem']), /Unknown lab day/);
+  assert.throws(() => decodeLabHash('#llab=v1.unknown-day.bike.fifo.0', ['riverside-stem']), /Unknown lab day/);
   assert.deepEqual(decodeLabHash('#llab=v1.unknown-day.bike.fifo.0', ['unknown-day']).day, 'unknown-day');
 });
 test('decodeLabHash always allows the current day token', () => {

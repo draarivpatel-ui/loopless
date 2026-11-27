@@ -587,13 +587,13 @@ export const SELF_TESTS = Object.freeze([
   } },
   { id: 'hash-roundtrip', name: 'Lab hash encode/decode round-trips exactly', run() {
     const state = { day: 'current', mode: 'car', strategy: 'edf', delay: 9 };
-    const decoded = decodeLabHash(encodeLabHash(state), ['houston-stem']);
+    const decoded = decodeLabHash(encodeLabHash(state), ['riverside-stem']);
     return decoded.day === 'current' && decoded.mode === 'car' && decoded.strategy === 'edf' && decoded.delay === 9;
   } },
   { id: 'hash-proto', name: 'Lab hash rejects prototype and constructor tokens fail-closed', run() {
     for (const bad of ['#llab=v1.__proto__.bike.fifo.0', '#llab=v1.current.__proto__.fifo.0', '#llab=v1.current.bike.constructor.0', '#llab=v1.constructor.bike.fifo.0']) {
       let threw = false;
-      try { decodeLabHash(bad, ['houston-stem']); } catch { threw = true; }
+      try { decodeLabHash(bad, ['riverside-stem']); } catch { threw = true; }
       if (!threw) return false;
     }
     return true;

@@ -73,7 +73,7 @@ test('diagnosis follows prerequisite chains rather than only checking the anchor
 });
 
 test('budget exhaustion on the six-stop hackathon preset stays honest and deterministic', () => {
-  const preset = STUDIO_PRESETS.find((item) => item.id === 'houston-hackathon');
+  const preset = STUDIO_PRESETS.find((item) => item.id === 'riverside-hackathon');
   assert.equal(preset.stops.length, 6);
   const bounded = solveOptimal(preset, { nodeBudget: 1 });
   assert.equal(bounded.method, 'bounded-bnb');

@@ -2,7 +2,7 @@
   {
     "do": "select",
     "selector": "#preset-select",
-    "value": "houston-stem"
+    "value": "riverside-stem"
   },
   {
     "do": "eval",
@@ -239,7 +239,7 @@
   {
     "do": "select",
     "selector": "#preset-select",
-    "value": "houston-stem"
+    "value": "riverside-stem"
   },
   {
     "do": "at",

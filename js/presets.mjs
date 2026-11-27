@@ -1,7 +1,7 @@
 /** Riverside / Lakeview, fictional examples. These are fictional errands on a synthetic mile grid. */
 export const STUDIO_PRESETS = [
   {
-    id: 'houston-stem', title: 'After-School STEM & Errand Run', mode: 'bike', metric: 'manhattan',
+    id: 'riverside-stem', title: 'After-School STEM & Errand Run', mode: 'bike', metric: 'manhattan',
     startTime: '15:30', returnToAnchor: true, transitJitterMin: 0,
     anchor: { name: 'Home base', x: 0, y: 0 },
     stops: [
@@ -12,7 +12,7 @@ export const STUDIO_PRESETS = [
     ],
   },
   {
-    id: 'Riverside-family', title: 'Saturday Family Groceries & Library Loop', mode: 'car', metric: 'manhattan',
+    id: 'lakeview-family', title: 'Saturday Family Groceries & Library Loop', mode: 'car', metric: 'manhattan',
     startTime: '09:00', returnToAnchor: true, transitJitterMin: 0,
     anchor: { name: 'Home base', x: 0, y: 0 },
     stops: [
@@ -24,7 +24,7 @@ export const STUDIO_PRESETS = [
     ],
   },
   {
-    id: 'houston-hackathon', title: 'Hackathon Supply & Hardware Pickup', mode: 'car', metric: 'manhattan',
+    id: 'riverside-hackathon', title: 'Hackathon Supply & Hardware Pickup', mode: 'car', metric: 'manhattan',
     startTime: '08:30', returnToAnchor: true, transitJitterMin: 0,
     anchor: { name: 'Team base', x: 0, y: 0 },
     stops: [
